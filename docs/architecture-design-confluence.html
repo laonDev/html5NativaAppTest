@@ -1,0 +1,1114 @@
+<h1 id="igaming-html5">iGaming HTML5 앱 — 아키텍처 설계 초안</h1>
+<blockquote>
+<p>작성일: 2026-03-09
+버전: 0.1 (Phase 1 설계 초안)
+상태: 초안 — 서버 실행 환경 미구성으로 정적 코드 분석 기반 작성. Phase 2 착수 시 실행 검증 후 보완 예정.
+<strong>미결정</strong>: 네이티브 래퍼(Capacitor) 포함 최종 기술 스택은 팀 협의 후 확정 예정.</p>
+</blockquote>
+<hr />
+<h2 id="_1">목차</h2>
+<ol>
+<li><a href="#1-배경-및-목적">배경 및 목적</a></li>
+<li><a href="#2-기술-스택-선정">기술 스택 선정</a></li>
+<li><a href="#3-프로젝트-폴더-구조">프로젝트 폴더 구조</a></li>
+<li><a href="#4-라우팅-설계">라우팅 설계</a></li>
+<li><a href="#5-상태-관리-설계">상태 관리 설계</a></li>
+<li><a href="#6-api-레이어-설계">API 레이어 설계</a></li>
+<li><a href="#7-실시간-통신-설계">실시간 통신 설계</a></li>
+<li><a href="#8-unity--html5-아키텍처-패턴-매핑">Unity → HTML5 아키텍처 패턴 매핑</a></li>
+<li><a href="#9-phase-로드맵">Phase 로드맵</a></li>
+</ol>
+<hr />
+<h2 id="1">1. 배경 및 목적</h2>
+<h3 id="11">1.1 마이그레이션 배경</h3>
+<p>기존 iGaming 플랫폼은 <strong>Unity 2022.3 (C#)</strong> 기반 네이티브 모바일 앱으로 구현되어 있으며,
+크로스 플랫폼 배포 효율성을 높이고자 <strong>설치형 모바일 앱</strong>으로 리빌드.</p>
+<p>기술 방향은 두 가지 후보를 검토 중:
+- <strong>Option A</strong>: 웹 기술(HTML/CSS/TypeScript) + 네이티브 래퍼로 앱스토어 배포
+- <strong>Option B</strong>: Flutter (Dart) 기반 크로스 플랫폼 네이티브 앱</p>
+<p>최종 기술 스택은 팀 협의 후 확정 예정.</p>
+<h3 id="12-unity">1.2 현재 Unity 시스템 요약</h3>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>현재 (Unity)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>엔진</td>
+<td>Unity 2022.3.5f1</td>
+</tr>
+<tr>
+<td>언어</td>
+<td>C#</td>
+</tr>
+<tr>
+<td>비동기</td>
+<td>UniTask (async/await)</td>
+</tr>
+<tr>
+<td>상태 관리</td>
+<td>UniRx (ReactiveProperty)</td>
+</tr>
+<tr>
+<td>HTTP 클라이언트</td>
+<td>Best.HTTP (커스텀 ApiService 래퍼)</td>
+</tr>
+<tr>
+<td>실시간 (게임)</td>
+<td>Socket.IO (Best.SocketIO)</td>
+</tr>
+<tr>
+<td>실시간 (슬롯)</td>
+<td>Best.WebSockets + STOMP</td>
+</tr>
+<tr>
+<td>에셋 관리</td>
+<td>Addressable Asset System</td>
+</tr>
+<tr>
+<td>국제화</td>
+<td>Unity.Localization</td>
+</tr>
+<tr>
+<td>슬롯 게임</td>
+<td>WebView (Vuplex) 내 iframe 로드</td>
+</tr>
+<tr>
+<td>애니메이션</td>
+<td>Spine (spine-unity), DOTween</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>Unity UGUI (Canvas)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2">2. 기술 스택 검토</h2>
+<blockquote>
+<p><strong>주의</strong>: 최종 기술 스택은 팀 협의 후 확정 예정. 이 섹션은 두 후보 스택의 비교 초안임.</p>
+</blockquote>
+<h3 id="21">2.1 공통 확정 사항</h3>
+<p>프레임워크와 무관하게 아래 항목은 본부 방향 또는 서버 기술 스택에 의해 확정.</p>
+<table>
+<thead>
+<tr>
+<th>영역</th>
+<th>기술</th>
+<th>비고</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>게임 렌더링</td>
+<td>Pixi.js v8</td>
+<td>본부 기존 HTML5 프로젝트 표준</td>
+</tr>
+<tr>
+<td>실시간 (소켓)</td>
+<td>socket.io-client</td>
+<td>기존 서버 Socket.IO Multi 서버와 호환</td>
+</tr>
+<tr>
+<td>실시간 (STOMP)</td>
+<td>@stomp/stompjs</td>
+<td>SuprNation WalletEvent/PlayerEvent 구독</td>
+</tr>
+<tr>
+<td>슬롯 게임</td>
+<td>iframe</td>
+<td>기존 서버 iframe-support 필드 확인됨</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-option-a-react-html5">2.2 Option A: React + 네이티브 래퍼 (HTML5 웹앱 방식)</h3>
+<table>
+<thead>
+<tr>
+<th>영역</th>
+<th>기술</th>
+<th>대체하는 Unity 기술</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>프레임워크</td>
+<td>React 18+</td>
+<td>Unity UGUI</td>
+</tr>
+<tr>
+<td>언어</td>
+<td>TypeScript</td>
+<td>C#</td>
+</tr>
+<tr>
+<td>상태 관리</td>
+<td>Zustand</td>
+<td>UniRx (ReactiveProperty)</td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td>Axios</td>
+<td>Best.HTTP (ApiService)</td>
+</tr>
+<tr>
+<td>라우팅</td>
+<td>React Router v6</td>
+<td>SceneManager</td>
+</tr>
+<tr>
+<td>스타일</td>
+<td>Tailwind CSS</td>
+<td>Unity UGUI Layout</td>
+</tr>
+<tr>
+<td>애니메이션 (UI)</td>
+<td>Framer Motion</td>
+<td>DOTween</td>
+</tr>
+<tr>
+<td>애니메이션 (Spine)</td>
+<td>pixi-spine</td>
+<td>spine-unity</td>
+</tr>
+<tr>
+<td>국제화</td>
+<td>i18next</td>
+<td>Unity.Localization</td>
+</tr>
+<tr>
+<td>네이티브 래퍼</td>
+<td><strong>Capacitor</strong> <em>(팀 협의 후 확정)</em></td>
+<td>Unity Native Build</td>
+</tr>
+<tr>
+<td>빌드</td>
+<td>Vite</td>
+<td>Unity Build System</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Capacitor 검토 근거</strong></p>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>역할</td>
+<td>HTML5 앱을 iOS/Android 네이티브 앱으로 패키징</td>
+</tr>
+<tr>
+<td>웹뷰</td>
+<td>iOS: WKWebView, Android: Chrome WebView</td>
+</tr>
+<tr>
+<td>장점</td>
+<td>웹 코드 100% 재사용, 네이티브 API 접근 가능, 플러그인 생태계 풍부</td>
+</tr>
+<tr>
+<td>Cordova 대비</td>
+<td>최신 WebView 기본, 더 나은 TypeScript 지원</td>
+</tr>
+<tr>
+<td>TWA 대비</td>
+<td>iOS 지원 포함, 네이티브 API 접근 범위 넓음</td>
+</tr>
+</tbody>
+</table>
+<p><strong>필요한 네이티브 플러그인 (Capacitor 기준)</strong></p>
+<table>
+<thead>
+<tr>
+<th>플러그인</th>
+<th>용도</th>
+<th>Unity 대응</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@capacitor/app</code></td>
+<td>앱 상태, 딥링크</td>
+<td>Application.deepLinkActivated</td>
+</tr>
+<tr>
+<td><code>@capacitor/status-bar</code></td>
+<td>상태바 제어</td>
+<td>Screen.fullScreen</td>
+</tr>
+<tr>
+<td><code>@capacitor/splash-screen</code></td>
+<td>스플래시 화면</td>
+<td>Unity Splash Screen</td>
+</tr>
+<tr>
+<td><code>@capacitor/keyboard</code></td>
+<td>키보드 제어</td>
+<td>TouchScreenKeyboard</td>
+</tr>
+<tr>
+<td><code>@capacitor/haptics</code></td>
+<td>진동 피드백</td>
+<td>Handheld.Vibrate</td>
+</tr>
+<tr>
+<td><code>@capacitor/browser</code></td>
+<td>외부 URL 오픈</td>
+<td>Application.OpenURL</td>
+</tr>
+<tr>
+<td><code>@capacitor/push-notifications</code></td>
+<td>푸시 알림</td>
+<td>Firebase Cloud Messaging</td>
+</tr>
+<tr>
+<td><code>capacitor-plugin-safe-area</code></td>
+<td>Safe Area 대응</td>
+<td>Screen.safeArea</td>
+</tr>
+</tbody>
+</table>
+<h3 id="23-option-b-flutter">2.3 Option B: Flutter</h3>
+<table>
+<thead>
+<tr>
+<th>영역</th>
+<th>기술</th>
+<th>대체하는 Unity 기술</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>프레임워크</td>
+<td>Flutter 3.x</td>
+<td>Unity UGUI</td>
+</tr>
+<tr>
+<td>언어</td>
+<td>Dart</td>
+<td>C#</td>
+</tr>
+<tr>
+<td>상태 관리</td>
+<td>Riverpod / Bloc</td>
+<td>UniRx (ReactiveProperty)</td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td>dio / http</td>
+<td>Best.HTTP</td>
+</tr>
+<tr>
+<td>실시간 (소켓)</td>
+<td>socket_io_client</td>
+<td>Best.SocketIO</td>
+</tr>
+<tr>
+<td>실시간 (STOMP)</td>
+<td>stomp_dart_client</td>
+<td>Best.WebSockets + STOMP</td>
+</tr>
+<tr>
+<td>라우팅</td>
+<td>go_router</td>
+<td>SceneManager</td>
+</tr>
+<tr>
+<td>애니메이션 (Spine)</td>
+<td>spine-flutter (공식 런타임)</td>
+<td>spine-unity</td>
+</tr>
+<tr>
+<td>애니메이션 (UI)</td>
+<td>Flutter Animation / Rive</td>
+<td>DOTween</td>
+</tr>
+<tr>
+<td>국제화</td>
+<td>flutter_localizations / easy_localization</td>
+<td>Unity.Localization</td>
+</tr>
+<tr>
+<td>슬롯 게임</td>
+<td>webview_flutter (iframe 로드)</td>
+<td>Vuplex WebView</td>
+</tr>
+<tr>
+<td>네이티브 기능</td>
+<td>Flutter 내장 + pub.dev 플러그인</td>
+<td>Unity Native Build</td>
+</tr>
+</tbody>
+</table>
+<h3 id="24-option-a-vs-option-b">2.4 스택 비교 (Option A vs Option B)</h3>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>Option A (React + Capacitor)</th>
+<th>Option B (Flutter)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>렌더링</td>
+<td>WebView (DOM/CSS)</td>
+<td>Skia 엔진 (자체 렌더링)</td>
+</tr>
+<tr>
+<td>성능</td>
+<td>WebView 오버헤드 있음</td>
+<td>네이티브에 준하는 60fps</td>
+</tr>
+<tr>
+<td>개발 생산성</td>
+<td>웹 개발자 즉시 투입 가능</td>
+<td>Dart 학습 필요 (C#과 유사)</td>
+</tr>
+<tr>
+<td>Spine 지원</td>
+<td>pixi-spine (커뮤니티)</td>
+<td>spine-flutter (공식 런타임)</td>
+</tr>
+<tr>
+<td>iframe 슬롯</td>
+<td>네이티브 iframe 지원</td>
+<td>webview_flutter 위젯 필요</td>
+</tr>
+<tr>
+<td>앱스토어 심사</td>
+<td>하이브리드 앱 리스크 존재</td>
+<td>네이티브 앱으로 인정</td>
+</tr>
+<tr>
+<td>웹 동시 배포</td>
+<td>동일 코드로 웹 배포 가능</td>
+<td>Flutter Web 성능 제한적</td>
+</tr>
+<tr>
+<td>C# 코드 전환</td>
+<td>TypeScript로 재작성</td>
+<td>Dart로 재작성 (문법 유사)</td>
+</tr>
+<tr>
+<td>패키지 생태계</td>
+<td>npm (매우 풍부)</td>
+<td>pub.dev (충분, 웹보다 적음)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>미결정 — 팀 협의 항목</strong>: 최종 네이티브 래퍼 / 프레임워크 선택. 아래 3~9절의 설계 초안은 <strong>Option A (React 기반)</strong> 기준으로 작성됨. Option B 선택 시 별도 재설계 필요.</p>
+</blockquote>
+<hr />
+<h2 id="3">3. 프로젝트 폴더 구조</h2>
+<blockquote>
+<p><strong>Option A (React + Capacitor) 기준 초안</strong>. Option B (Flutter) 선택 시 별도 구조 설계 필요.</p>
+</blockquote>
+<pre><code>src/
+├── api/
+│   ├── rest/         # Axios 인스턴스 + 엔드포인트별 모듈
+│   ├── socket/       # Socket.IO 이벤트 핸들러 (게임 서버)
+│   └── stomp/        # STOMP 이벤트 핸들러 (SuprNation)
+├── stores/           # Zustand 전역 상태 저장소
+│   ├── authStore.ts      # 인증 (ServerInfo, JWT, UserInfo)
+│   ├── balanceStore.ts   # 잔액 (cash, bonus, viccon)
+│   ├── gameStore.ts      # 게임 목록 / 카테고리 / 즐겨찾기
+│   ├── crashStore.ts     # Crash 게임 상태 (roundState, tick, betRank)
+│   ├── bingoStore.ts     # 빙고 상태 (houseyData, coin, endTime)
+│   ├── missionStore.ts   # 데일리 미션 상태
+│   ├── tournamentStore.ts
+│   ├── voltStore.ts
+│   └── ticketStore.ts
+├── pages/            # 페이지 컴포넌트 (라우팅 단위)
+│   ├── LoginPage.tsx
+│   ├── LobbyPage.tsx
+│   ├── SlotPage.tsx      # 풀스크린 (헤더/네비 없음)
+│   ├── CrashGamePage.tsx # 풀스크린 (헤더/네비 없음)
+│   ├── AccountPage.tsx
+│   ├── BingoPage.tsx
+│   ├── DailyMissionPage.tsx
+│   ├── TournamentPage.tsx
+│   ├── HistoryPage.tsx
+│   ├── VicconPage.tsx
+│   ├── TicketPage.tsx
+│   └── VoltPage.tsx
+├── components/       # 재사용 UI 컴포넌트
+│   ├── Header/
+│   ├── CategoryBar/
+│   ├── GameGrid/
+│   ├── Modal/        # ModalProvider (PopupManager 대체)
+│   └── BottomNav.tsx
+├── types/            # TypeScript 인터페이스
+├── hooks/            # 커스텀 React 훅
+├── utils/            # 유틸리티 함수
+└── i18n/             # 로컬라이제이션 리소스
+
+ios/                  # (Option A) Capacitor iOS 네이티브 프로젝트
+android/              # (Option A) Capacitor Android 네이티브 프로젝트
+capacitor.config.ts   # (Option A) Capacitor 설정
+</code></pre>
+<hr />
+<h2 id="4">4. 라우팅 설계</h2>
+<h3 id="41">4.1 화면 구조</h3>
+<pre><code>/login          → LoginPage        (인증 없음)
+/slot           → SlotPage         (풀스크린, 헤더/네비 없음)
+/crash          → CrashGamePage    (풀스크린, 헤더/네비 없음)
+
+MainLayout (Header + BottomNav 포함)
+  /lobby        → LobbyPage
+  /account      → AccountPage
+  /bingo        → BingoPage
+  /mission      → DailyMissionPage
+  /tournament   → TournamentPage
+  /history      → HistoryPage
+  /viccon       → VicconPage
+  /ticket       → TicketPage
+  /volt         → VoltPage
+</code></pre>
+<h3 id="42-unity-scenemanager-react-router">4.2 Unity SceneManager → React Router 대응</h3>
+<table>
+<thead>
+<tr>
+<th>Unity 씬 전환</th>
+<th>React Router</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IGamingSceneManager.LoadTitle()</code></td>
+<td><code>navigate('/login')</code></td>
+</tr>
+<tr>
+<td><code>IGamingSceneManager.LoadLobby()</code></td>
+<td><code>navigate('/lobby')</code></td>
+</tr>
+<tr>
+<td><code>IGamingSceneManager.LoadSlot()</code></td>
+<td><code>navigate('/slot')</code></td>
+</tr>
+<tr>
+<td><code>IGamingSceneManager.LoadCrash()</code></td>
+<td><code>navigate('/crash')</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5">5. 상태 관리 설계</h2>
+<h3 id="51-store">5.1 Store 구성</h3>
+<table>
+<thead>
+<tr>
+<th>Store</th>
+<th>관리 상태</th>
+<th>Unity 대응</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>authStore</code></td>
+<td>serverInfo, authInfo, JWT 토큰, userInfo, isLoggedIn</td>
+<td><code>NetworkManager</code> 싱글턴</td>
+</tr>
+<tr>
+<td><code>balanceStore</code></td>
+<td>cash, bonus, balance, viccon</td>
+<td><code>UserData.balance</code> (ReactiveProperty)</td>
+</tr>
+<tr>
+<td><code>gameStore</code></td>
+<td>카테고리 목록, 게임 목록, 즐겨찾기</td>
+<td><code>GamesResult</code>, <code>GamesCategories</code></td>
+</tr>
+<tr>
+<td><code>crashStore</code></td>
+<td>roundState, tick, betRank, 유저 베팅</td>
+<td><code>CrashGame.cs</code> 상태</td>
+</tr>
+<tr>
+<td><code>bingoStore</code></td>
+<td>houseyData, coin, endTime</td>
+<td><code>BritishBingo.cs</code> 상태</td>
+</tr>
+<tr>
+<td><code>missionStore</code></td>
+<td>미션 목록, hasCompletable, endDate</td>
+<td><code>DailyMission.cs</code> 상태</td>
+</tr>
+<tr>
+<td><code>tournamentStore</code></td>
+<td>토너먼트 데이터, 유저 랭킹</td>
+<td><code>TournamentPanel.cs</code> 상태</td>
+</tr>
+<tr>
+<td><code>voltStore</code></td>
+<td>voltList, totalCount</td>
+<td><code>SecondaryGoodsPanel.cs</code></td>
+</tr>
+<tr>
+<td><code>ticketStore</code></td>
+<td>gauge, maxGauge, count</td>
+<td><code>TicketPanel.cs</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="52">5.2 상태 갱신 흐름</h3>
+<pre><code>[로그인 플로우]
+serverInfo API → authStore
+  → createGuest/login API → authStore (JWT → localStorage)
+  → enterLobby API → balanceStore, gameStore
+  → Socket.IO 연결
+  → STOMP 연결 (SuprNation 계정인 경우)
+
+[실시간 갱신]
+Socket.IO crash_state → crashStore
+STOMP WalletEvent    → balanceStore
+슬롯 스핀 응답       → balanceStore, ticketStore
+</code></pre>
+<h3 id="53-localstorage">5.3 localStorage 영속성</h3>
+<table>
+<thead>
+<tr>
+<th>키</th>
+<th>내용</th>
+<th>시점</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>token</code></td>
+<td>JWT 토큰</td>
+<td>로그인 성공</td>
+</tr>
+<tr>
+<td><code>authInfo</code></td>
+<td>authid, accountidx</td>
+<td>계정 생성/로그인</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>주의</strong>: 서버 잔액값은 /1000 변환 후 표시 (예: <code>100000</code> → <code>£100.00</code>)</p>
+</blockquote>
+<hr />
+<h2 id="6-api">6. API 레이어 설계</h2>
+<h3 id="61">6.1 구조 원칙</h3>
+<ul>
+<li><strong>모든 요청</strong>: POST 방식 (Unity <code>ApiService.Resolve&lt;T&gt;()</code> 패턴 동일)</li>
+<li><strong>인증</strong>: <code>Authorization: Bearer {JWT}</code> 헤더 자동 주입 (Axios 인터셉터)</li>
+<li><strong>401 처리</strong>: localStorage 클리어 → <code>/login</code> 리다이렉트</li>
+</ul>
+<h3 id="62-api">6.2 API 모듈 분류</h3>
+<table>
+<thead>
+<tr>
+<th>모듈</th>
+<th>엔드포인트 그룹</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>accountApi</code></td>
+<td><code>account/*</code>, <code>user/*</code></td>
+</tr>
+<tr>
+<td><code>gameApi</code></td>
+<td><code>game/*</code>, <code>games/*</code></td>
+</tr>
+<tr>
+<td><code>crashApi</code></td>
+<td><code>crash/*</code>, <code>crashgame/*</code></td>
+</tr>
+<tr>
+<td><code>casinoApi</code></td>
+<td><code>casino/slot/*</code></td>
+</tr>
+<tr>
+<td><code>houseyApi</code></td>
+<td><code>housey/*</code></td>
+</tr>
+<tr>
+<td><code>missionApi</code></td>
+<td><code>daily_mission/*</code></td>
+</tr>
+<tr>
+<td><code>tournamentApi</code></td>
+<td><code>tournament/*</code></td>
+</tr>
+<tr>
+<td><code>vicconApi</code></td>
+<td><code>viccon/*</code></td>
+</tr>
+<tr>
+<td><code>voltApi</code></td>
+<td><code>volt/*</code></td>
+</tr>
+<tr>
+<td><code>ticketApi</code></td>
+<td><code>ticket/*</code></td>
+</tr>
+<tr>
+<td><code>historyApi</code></td>
+<td><code>history/*</code></td>
+</tr>
+<tr>
+<td><code>suprApi</code></td>
+<td><code>v1/*</code> (SuprNation)</td>
+</tr>
+<tr>
+<td><code>logApi</code></td>
+<td><code>log/*</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7">7. 실시간 통신 설계</h2>
+<h3 id="71-socketio">7.1 Socket.IO (게임 서버)</h3>
+<p><strong>연결 대상</strong>: Multi 서버 (Socket.IO)
+<strong>인증</strong>: <code>auth: { token }</code> 옵션 (JWT 전달)
+<strong>재연결</strong>: 자동 재연결 (최대 10회, 1초 간격)</p>
+<table>
+<thead>
+<tr>
+<th>이벤트</th>
+<th>방향</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crash_join</code></td>
+<td>S→C</td>
+<td>크래시 입장 (roundIndex, currentState, betRank)</td>
+</tr>
+<tr>
+<td><code>crash_state</code></td>
+<td>S→C</td>
+<td>상태 업데이트 매 틱 (tick, currentState)</td>
+</tr>
+<tr>
+<td><code>crash_bet</code></td>
+<td>S→C</td>
+<td>베팅 브로드캐스트</td>
+</tr>
+<tr>
+<td><code>crash_cash_out</code></td>
+<td>S→C</td>
+<td>캐시아웃 브로드캐스트</td>
+</tr>
+<tr>
+<td><code>crash_end</code></td>
+<td>S→C</td>
+<td>라운드 종료 (betRank[], cashOutRank[])</td>
+</tr>
+<tr>
+<td><code>slot_join</code></td>
+<td>C→S</td>
+<td>슬롯 입장</td>
+</tr>
+<tr>
+<td><code>spin</code></td>
+<td>S→C</td>
+<td>스핀 결과 (cash, bonus, voltType)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-stomp-suprnation">7.2 STOMP (SuprNation)</h3>
+<p><strong>연결 대상</strong>: SuprNation WebSocket (슬롯 잔액 실시간 갱신용)
+<strong>인증</strong>: 세션 쿠키 기반 (SuprNation 계정 로그인 시만 활성화)
+<strong>하트비트</strong>: 10초 간격</p>
+<table>
+<thead>
+<tr>
+<th>구독 ID</th>
+<th>경로</th>
+<th>페이로드</th>
+<th>처리</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sub-3</code></td>
+<td><code>user/exchange/amq.direct/wallet</code></td>
+<td><code>StompWallet</code></td>
+<td><code>balanceStore</code> 갱신</td>
+</tr>
+<tr>
+<td><code>sub-4</code></td>
+<td><code>user/exchange/amq.direct/player</code></td>
+<td>(generic)</td>
+<td>플레이어 상태 업데이트</td>
+</tr>
+</tbody>
+</table>
+<h3 id="73">7.3 연결 관리 원칙</h3>
+<ul>
+<li>Socket.IO: 로그인 완료 후 즉시 연결</li>
+<li>STOMP: SuprNation 계정 로그인 시에만 연결</li>
+<li>백그라운드 복귀: <code>@capacitor/app</code> stateChange → 재연결 (Phase 3 구현 예정)</li>
+<li>로그아웃 시: 양쪽 모두 연결 해제</li>
+</ul>
+<hr />
+<h2 id="8-unity-html5">8. Unity → HTML5 아키텍처 패턴 매핑</h2>
+<h3 id="81">8.1 설계 패턴 매핑</h3>
+<table>
+<thead>
+<tr>
+<th>Unity 패턴</th>
+<th>현재 구현체</th>
+<th>HTML5 대응</th>
+<th>비고</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SingletonClass&lt;T&gt;</code></td>
+<td>NetworkManager, UserData, TableManager</td>
+<td>Context Provider / Zustand store</td>
+<td>전역 상태 관리</td>
+</tr>
+<tr>
+<td><code>ReactiveProperty&lt;T&gt;</code></td>
+<td>UserData.balance, voltCount 등</td>
+<td>Zustand selector</td>
+<td>구독 기반 UI 갱신</td>
+</tr>
+<tr>
+<td><code>UniTask async/await</code></td>
+<td>전체 비동기 흐름</td>
+<td>Promise / async-await</td>
+<td>1:1 대응</td>
+</tr>
+<tr>
+<td><code>PopupManager</code></td>
+<td>모달 스택 관리</td>
+<td>React Portal + Context</td>
+<td>z-index 관리</td>
+</tr>
+<tr>
+<td><code>L10N.String(key)</code></td>
+<td>Unity.Localization</td>
+<td><code>t(key)</code> (i18next)</td>
+<td>키 기반 번역</td>
+</tr>
+<tr>
+<td><code>SlotWebView</code></td>
+<td>Vuplex WebView</td>
+<td><code>&lt;iframe&gt;</code></td>
+<td>슬롯 게임 로드</td>
+</tr>
+<tr>
+<td><code>Spine Animation</code></td>
+<td>spine-unity</td>
+<td>pixi-spine / spine-ts</td>
+<td>동일 에셋 활용</td>
+</tr>
+<tr>
+<td><code>DOTween</code></td>
+<td>UI 트윈 애니메이션</td>
+<td>Framer Motion / CSS transition</td>
+<td></td>
+</tr>
+<tr>
+<td><code>SceneManager</code></td>
+<td>씬 전환</td>
+<td>React Router</td>
+<td>SPA 라우팅</td>
+</tr>
+<tr>
+<td><code>TableRepository</code></td>
+<td>JSON 테이블 다운로드/캐싱</td>
+<td>Axios + React Query 캐싱</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ApiService.Resolve&lt;T&gt;()</code></td>
+<td>제네릭 API 호출</td>
+<td>Axios 인스턴스 + 모듈화</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Addressables</code></td>
+<td>에셋 번들 로딩</td>
+<td>Dynamic import / lazy loading</td>
+<td>코드 스플리팅</td>
+</tr>
+<tr>
+<td><code>Handheld.Vibrate</code></td>
+<td>진동 피드백</td>
+<td><code>@capacitor/haptics</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Screen.safeArea</code></td>
+<td>Safe Area 대응</td>
+<td><code>capacitor-plugin-safe-area</code> + CSS env()</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Application.OpenURL</code></td>
+<td>외부 브라우저</td>
+<td><code>@capacitor/browser</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Unity Native Build</td>
+<td>iOS/Android 빌드</td>
+<td>Capacitor + Xcode/Android Studio</td>
+<td>앱스토어 배포</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-userdata-zustand">8.2 상태 저장소 매핑 (UserData → Zustand)</h3>
+<table>
+<thead>
+<tr>
+<th>Unity (UserData 필드)</th>
+<th>Zustand Store</th>
+<th>갱신 시점</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>balance</code></td>
+<td><code>balanceStore.balance</code></td>
+<td>로그인, 스핀, STOMP WalletEvent</td>
+</tr>
+<tr>
+<td><code>balanceCash</code></td>
+<td><code>balanceStore.cash</code></td>
+<td>동일</td>
+</tr>
+<tr>
+<td><code>balanceBonus</code></td>
+<td><code>balanceStore.bonus</code></td>
+<td>동일</td>
+</tr>
+<tr>
+<td><code>viccon</code></td>
+<td><code>balanceStore.viccon</code></td>
+<td>Viccon 게임 결과, 볼트 오픈</td>
+</tr>
+<tr>
+<td><code>voltCount</code></td>
+<td><code>voltStore.totalCount</code></td>
+<td>볼트 획득/사용</td>
+</tr>
+<tr>
+<td><code>ticketGaugeValue</code></td>
+<td><code>ticketStore.gaugeValue</code></td>
+<td>슬롯 스핀</td>
+</tr>
+<tr>
+<td><code>ticketCount</code></td>
+<td><code>ticketStore.count</code></td>
+<td>티켓 획득/사용</td>
+</tr>
+<tr>
+<td><code>bingoCoin</code></td>
+<td><code>bingoStore.coin</code></td>
+<td>빙고 DRAW</td>
+</tr>
+<tr>
+<td><code>bingoEndValue</code></td>
+<td><code>bingoStore.endTime</code></td>
+<td>로비 진입</td>
+</tr>
+<tr>
+<td><code>dailyMissionValue</code></td>
+<td><code>missionStore.hasCompletable</code></td>
+<td>미션 상태 변경</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-phase">9. Phase 로드맵</h2>
+<h3 id="phase-1">Phase 1 — 코어 기능 (분석/설계)</h3>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>내용</th>
+<th>QA 항목</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>프로젝트 셋업</td>
+<td>React + TypeScript + Vite + Zustand + Capacitor</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Capacitor 초기화</td>
+<td>iOS/Android 프로젝트, 스플래시, Safe Area</td>
+<td>#1~2</td>
+</tr>
+<tr>
+<td>인증 시스템</td>
+<td>게스트 로그인, JWT 관리, 자동 로그인</td>
+<td>#3~4</td>
+</tr>
+<tr>
+<td>헤더</td>
+<td>Balance, Volt 카운트, 프로필 아바타</td>
+<td>#7~11</td>
+</tr>
+<tr>
+<td>카테고리</td>
+<td>탭 네비게이션, 게임 그리드, 검색, 필터</td>
+<td>#14~18</td>
+</tr>
+<tr>
+<td>슬롯 진입</td>
+<td>iframe 로드, 스핀 처리</td>
+<td>#5~6</td>
+</tr>
+<tr>
+<td>프로필</td>
+<td>Account 페이지, 프로필 정보</td>
+<td>#12</td>
+</tr>
+<tr>
+<td>API 클라이언트</td>
+<td>Axios 인스턴스, 인터셉터, 에러 핸들링</td>
+<td>-</td>
+</tr>
+<tr>
+<td>상태 관리 기반</td>
+<td>Zustand 스토어 전체</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p><strong>결과물</strong>: 앱 설치 → 로그인 → 로비 → 슬롯 진입 가능한 설치형 앱</p>
+<h3 id="phase-2">Phase 2 — 게임 기능</h3>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>내용</th>
+<th>QA 항목</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>빙고 (Housey)</td>
+<td>5x5 그리드, DRAW, 매칭, 라인 체크</td>
+<td>#19~22</td>
+</tr>
+<tr>
+<td>데일리 미션</td>
+<td>미션 리스트, 프로그레스 바, 수집</td>
+<td>#23~25</td>
+</tr>
+<tr>
+<td>토너먼트</td>
+<td>리더보드, 폴링, 보상 팝업</td>
+<td>#26~29</td>
+</tr>
+<tr>
+<td>히스토리</td>
+<td>Cash/Bonus/Viccon/Ticket 히스토리</td>
+<td>#13</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-3">Phase 3 — 고급 기능</h3>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>내용</th>
+<th>QA 항목</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Viccon</td>
+<td>게임 목록, 슬롯/크래시 진입</td>
+<td>#30~33</td>
+</tr>
+<tr>
+<td>Ticket</td>
+<td>티켓 UI, 게이지, 사용</td>
+<td>#34~36</td>
+</tr>
+<tr>
+<td>Volt</td>
+<td>인벤토리, 오픈, 보상</td>
+<td>#37~38</td>
+</tr>
+<tr>
+<td>Crash 게임</td>
+<td>Socket.IO + Canvas 애니메이션 + 베팅</td>
+<td>#39~43</td>
+</tr>
+<tr>
+<td>STOMP</td>
+<td>실시간 잔액 업데이트 (SuprNation)</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase">Phase별 기술 리스크</h3>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>리스크</th>
+<th>대응 방안</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>기술 스택 미확정</strong></td>
+<td>팀 협의 완료 후 Phase 2 착수 전 확정 필요</td>
+</tr>
+<tr>
+<td>1</td>
+<td>서버 환경 미구성</td>
+<td>Mock 모드로 UI/로직 선개발, 서버 구축 후 교체</td>
+</tr>
+<tr>
+<td>1</td>
+<td>앱스토어 심사 (Option A: 하이브리드 앱 정책)</td>
+<td>네이티브 래퍼 가이드라인 준수, 네이티브 기능 활용</td>
+</tr>
+<tr>
+<td>1</td>
+<td>iframe 내 슬롯 통신</td>
+<td>postMessage API, iframe-support 필드 확인</td>
+</tr>
+<tr>
+<td>2</td>
+<td>빙고 터치 반응성 (Option A)</td>
+<td>CSS Grid + touch-action 최적화</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Crash 실시간 성능</td>
+<td>requestAnimationFrame + Web Worker 배수 계산</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Spine 웹 렌더링 성능</td>
+<td>Pixi.js v8 + pixi-spine, Canvas 2D 폴백</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Socket.IO 백그라운드 복귀</td>
+<td>앱 상태 변경 이벤트 리스너 + 재연결 로직</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<blockquote>
+<p><strong>참고 문서</strong>: html5-migration-guide.md (기능별 상세 명세, API 목록, TypeScript 데이터 모델)</p>
+</blockquote>
