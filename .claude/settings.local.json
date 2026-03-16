@@ -12,7 +12,10 @@
       "Bash(\"/c/Program Files/Android/Android Studio/jbr/bin/java.exe\":*)",
       "Bash(npm run:*)",
       "Bash(export:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git:*)",
+      "Bash(node:*)"
     ]
   }
 }
