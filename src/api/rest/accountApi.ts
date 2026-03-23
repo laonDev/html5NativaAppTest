@@ -4,7 +4,7 @@ import type { GetUserAccountResponse } from '@/types';
 
 export const accountApi = {
   serverInfo: () =>
-    client.get<unknown, ServerInfo>('account/server_info'),
+    client.post<unknown, ServerInfo>('account/server_info', {}),
 
   createGuest: (params: { advertising_id?: string; af_id?: string; af_adflag?: string; af_advid?: string }) =>
     client.post<unknown, { create_result: AuthInfo }>('account/create_guest', params),
@@ -55,5 +55,5 @@ export const accountApi = {
     client.post<unknown, void>('user/create', params),
 
   getUser: (startRank: number, size: number) =>
-    client.get<unknown, GetUserAccountResponse>('user/get', { params: { startRank, size } }),
+    client.post<unknown, GetUserAccountResponse>('user/get', { startRank, size }),
 };

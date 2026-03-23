@@ -3,7 +3,7 @@ import type { VoltListResponse, VoltOpenResponse, VoltOpenAllResponse } from '@/
 
 export const voltApi = {
   list: () =>
-    client.get<unknown, VoltListResponse>('volt/list'),
+    client.post<unknown, VoltListResponse>('volt/list', {}),
 
   open: (voltType: number) =>
     client.post<unknown, VoltOpenResponse>('volt/open', { voltType }),

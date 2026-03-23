@@ -3,7 +3,7 @@ import type { HouseyReadResponse, HouseyPlayResponse, HouseyResetResponse } from
 
 export const houseyApi = {
   read: () =>
-    client.get<unknown, HouseyReadResponse>('housey/read'),
+    client.post<unknown, HouseyReadResponse>('housey/read', {}),
 
   play: (playCount: number) =>
     client.post<unknown, HouseyPlayResponse>('housey/play', { playCount }),

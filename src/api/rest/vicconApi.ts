@@ -3,7 +3,7 @@ import type { VicconSlotListResponse, SlotLoginResponse } from '@/types';
 
 export const vicconApi = {
   gameList: () =>
-    client.get<unknown, VicconSlotListResponse>('viccon/game/list'),
+    client.post<unknown, VicconSlotListResponse>('viccon/game/list', {}),
 
   slotEnter: (slotType: number) =>
     client.post<unknown, SlotLoginResponse>('viccon/slot/enter', { slotType }),

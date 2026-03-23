@@ -35,9 +35,16 @@ export interface CreateUserParameter {
 }
 
 export interface ServerInfo {
-  status: number;
-  message?: string;
-  version?: string;
-  multiServerUrl?: string;
-  suprStompUrl?: string;
+  system?: {
+    server_time?: string;
+    config?: {
+      revision?: number;
+      table_server_url?: string;
+      table_version?: string;
+      table_revision?: number;
+    };
+  };
+  content?: {
+    bundle_version?: string;
+  };
 }

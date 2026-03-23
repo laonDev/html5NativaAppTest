@@ -3,16 +3,16 @@ import type { GetUserAccountResponse } from '@/types';
 
 export const gameApi = {
   sync: (configRevision?: number) =>
-    client.get<unknown, unknown>('game/sync', { params: { config_revision: configRevision } }),
+    client.post<unknown, unknown>('game/sync', { config_revision: configRevision }),
 
-  enterLobby: (startRank: number, size: number) =>
+  enterLobby: (startRank = 1, size = 3) =>
     client.post<unknown, GetUserAccountResponse>('game/enter_lobby', { startRank, size }),
 
   gamesList: () =>
-    client.get<unknown, unknown>('games/list'),
+    client.post<unknown, unknown>('games/list', {}),
 
   gamesSearch: (text: string) =>
-    client.get<unknown, unknown>('games/search', { params: { text } }),
+    client.post<unknown, unknown>('games/search', { text }),
 
   favoriteCreate: (gameIdx: number) =>
     client.post<unknown, void>('games/favorite/create', { gameIdx }),
@@ -21,5 +21,5 @@ export const gameApi = {
     client.post<unknown, void>('games/favorite/delete', { gameIdx }),
 
   spinLog: (start: string, end: string) =>
-    client.get<unknown, unknown>('spinlog', { params: { start, end } }),
+    client.post<unknown, unknown>('spinlog', { start, end }),
 };

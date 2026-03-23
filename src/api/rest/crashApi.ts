@@ -10,7 +10,7 @@ import type {
 
 export const crashApi = {
   join: () =>
-    client.get<unknown, CrashJoinResponse>('crash/join'),
+    client.post<unknown, CrashJoinResponse>('crash/join', {}),
 
   bet: (betIndex: number, betMoney: number, autoMulti: number) =>
     client.post<unknown, void>('crashgame/bet', { betIndex, betMoney, autoMulti }),
@@ -25,18 +25,16 @@ export const crashApi = {
     client.post<unknown, CrashCashResponse>('crashgame/cashauto', { betIndex }),
 
   userHistory: () =>
-    client.get<unknown, CrashUserHistoryResponse>('crashgame/user/history'),
+    client.post<unknown, CrashUserHistoryResponse>('crashgame/user/history', {}),
 
   roundHistory: () =>
-    client.get<unknown, CrashRoundHistoryResponse>('crashgame/round/history'),
+    client.post<unknown, CrashRoundHistoryResponse>('crashgame/round/history', {}),
 
   topRanking: (categoryType: number, categoryDate: number, size: number) =>
-    client.get<unknown, CrashTopRankingResponse>('crashgame/top_ranking', {
-      params: { category_type: categoryType, category_date: categoryDate, size },
+    client.post<unknown, CrashTopRankingResponse>('crashgame/top_ranking', {
+      category_type: categoryType, category_date: categoryDate, size,
     }),
 
   roundDetail: (roundIndex: number) =>
-    client.get<unknown, CrashRoundDetailResponse>('crashgame/round/detail', {
-      params: { roundIndex },
-    }),
+    client.post<unknown, CrashRoundDetailResponse>('crashgame/round/detail', { roundIndex }),
 };

@@ -12,14 +12,14 @@ interface HistoryParams {
 
 export const historyApi = {
   cash: (params: HistoryParams) =>
-    client.get<unknown, HistoryResponse>('history/cash', { params }),
+    client.post<unknown, HistoryResponse>('history/cash', params),
 
   bonus: (params: HistoryParams) =>
-    client.get<unknown, HistoryResponse>('history/bonus', { params }),
+    client.post<unknown, HistoryResponse>('history/bonus', params),
 
   viccon: (params: HistoryParams) =>
-    client.get<unknown, HistoryResponse>('history/viccon', { params }),
+    client.post<unknown, HistoryResponse>('history/viccon', params),
 
   ticket: (params: HistoryParams) =>
-    client.get<unknown, HistoryResponse>('history/ticket', { params }),
+    client.post<unknown, HistoryResponse>('history/ticket', params),
 };

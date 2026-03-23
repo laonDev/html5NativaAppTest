@@ -15,7 +15,12 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Read(//d/NG_Workspace/igaming-s4/Assets/**)",
+      "Bash(grep -E \"\\\\.\\(cs|asset|json\\)$\")",
+      "Read(//d/NG_Workspace/igaming-s4/**)",
+      "Read(//d D:/NG_Workspace/**)",
+      "Bash(grep -r server_group D:NG_Workspaceigaming-s4 --include=*.cs)"
     ]
   }
 }

@@ -8,18 +8,18 @@ import type {
 
 export const tournamentApi = {
   info: (withRank: boolean, startRank: number, size: number) =>
-    client.get<unknown, { tournament: TournamentResponse | null }>('tournament/info', {
-      params: { withRank, startRank, size },
+    client.post<unknown, { tournament: TournamentResponse | null }>('tournament/info', {
+      withRank, startRank, size,
     }),
 
   award: () =>
     client.post<unknown, TournamentAwardResponse>('tournament/award'),
 
   ranking: (startRank: number, size: number, tournamentIdx: number) =>
-    client.get<unknown, TournamentRankingResponse>('tournament/ranking', {
-      params: { startRank, size, tournament_idx: tournamentIdx },
+    client.post<unknown, TournamentRankingResponse>('tournament/ranking', {
+      startRank, size, tournament_idx: tournamentIdx,
     }),
 
   history: (size: number) =>
-    client.get<unknown, TournamentHistoryResponse>('tournament/history', { params: { size } }),
+    client.post<unknown, TournamentHistoryResponse>('tournament/history', { size }),
 };

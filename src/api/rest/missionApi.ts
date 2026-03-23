@@ -8,7 +8,7 @@ import type {
 
 export const missionApi = {
   list: () =>
-    client.get<unknown, DailyMissionGetResponse>('daily_mission/list'),
+    client.post<unknown, DailyMissionGetResponse>('daily_mission/list', {}),
 
   collect: (missionIndex: number) =>
     client.post<unknown, DailyMissionCollectResponse>('daily_mission/collect', { missionIndex }),
