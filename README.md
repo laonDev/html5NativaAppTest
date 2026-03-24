@@ -26,15 +26,11 @@ npm install
 
 ## 2. 환경 변수 설정
 
-프로젝트 루트에 `.env.local` 파일을 생성하고 서버 URL을 입력합니다.
-
 ```bash
-# .env.local
-VITE_API_BASE_URL=https://<서버주소>
-VITE_SUPR_API_BASE_URL=https://api-staging.nyspins.com
-VITE_SOCKET_URL=https://<서버주소>/multi/socket.io
-VITE_STOMP_URL=wss://<서버주소>/ws
+npm run setup
 ```
+
+`.env.example`을 기반으로 `.env.local`을 자동 생성합니다. 서버 주소가 변경된 경우 `.env.local`을 직접 수정하세요.
 
 > **참고**: `.env.local` 파일이 없으면 Mock 모드로 동작합니다.
 

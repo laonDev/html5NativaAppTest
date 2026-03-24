@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "setup": "node -e \"const fs=require('fs');if(!fs.existsSync('.env.local')){fs.copyFileSync('.env.example','.env.local');console.log('.env.local 생성 완료')}else{console.log('.env.local 이미 존재합니다')}\"",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
