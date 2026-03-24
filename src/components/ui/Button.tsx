@@ -2,12 +2,14 @@ import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'text';
 type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonState = 'default' | 'active' | 'disabled' | 'loading';
 
 type ButtonProps = {
   variant?: ButtonVariant;
   size?: ButtonSize;
   active?: boolean;
   loading?: boolean;
+  loadingLabel?: ReactNode;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   fullWidth?: boolean;
@@ -41,6 +43,7 @@ export function Button({
   size = 'md',
   active = false,
   loading = false,
+  loadingLabel = '...',
   leftIcon,
   rightIcon,
   fullWidth = false,
@@ -57,6 +60,7 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const state: ButtonState = loading ? 'loading' : isDisabled ? 'disabled' : active ? 'active' : 'default';
   const resolvedBgImage =
     (isDisabled && bgImageDisabled) || (active && bgImageActive) || bgImage;
   const mergedStyle: CSSProperties = {
@@ -77,7 +81,9 @@ export function Button({
       type={rest.type ?? 'button'}
       disabled={isDisabled}
       aria-busy={loading}
+      aria-pressed={active ? true : undefined}
       data-active={active ? 'true' : 'false'}
+      data-state={state}
       className={joinClassName(
         'inline-flex items-center justify-center gap-1.5 rounded-lg font-semibold transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-50',
         VARIANT_CLASSES[variant],
@@ -90,7 +96,7 @@ export function Button({
       style={mergedStyle}
     >
       {leftIcon ? <span className="inline-flex items-center">{leftIcon}</span> : null}
-      <span>{loading ? '...' : children}</span>
+      <span>{loading ? loadingLabel : children}</span>
       {rightIcon ? <span className="inline-flex items-center">{rightIcon}</span> : null}
     </button>
   );
