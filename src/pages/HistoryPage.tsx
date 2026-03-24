@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { historyApi } from '@/api/rest';
 import { formatCurrency } from '@/utils/format';
 import type { HistoryItem } from '@/types';
+import { Button } from '@/components/ui/Button';
 
 type HistoryTab = 'cash' | 'bonus' | 'viccon' | 'ticket';
 
@@ -42,7 +43,7 @@ export function HistoryPage() {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex items-center justify-between bg-[#16213e] px-4 py-3">
-        <button onClick={() => navigate(-1)} className="text-sm text-gray-400">← Back</button>
+        <Button onClick={() => navigate(-1)} variant="text" size="sm">← Back</Button>
         <h2 className="text-lg font-bold">Earned History</h2>
         <div className="w-12" />
       </div>

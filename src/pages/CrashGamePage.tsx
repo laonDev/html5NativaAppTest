@@ -7,6 +7,7 @@ import { useBalanceStore, formatBalance } from '@/stores/balanceStore';
 import { CRASH_STATE } from '@/types';
 import type { BetRank } from '@/types';
 import { getMultiplierColor } from '@/utils/format';
+import { Button } from '@/components/ui/Button';
 
 const BET_SLOTS = [0, 1, 2, 3];
 
@@ -220,7 +221,7 @@ export function CrashGamePage() {
     <div className="flex h-full flex-col bg-[#1a1a2e]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2">
-        <button onClick={() => navigate(-1)} className="text-sm text-gray-400">← Back</button>
+        <Button onClick={() => navigate(-1)} variant="text" size="sm">← Back</Button>
         <h2 className="text-sm font-bold">Crash</h2>
         <span className="text-xs text-gray-400">{formatBalance(balance)}</span>
       </div>

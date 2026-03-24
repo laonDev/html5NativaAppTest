@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ticketApi } from '@/api/rest';
 import { useTicketStore } from '@/stores/ticketStore';
 import { formatCurrency } from '@/utils/format';
+import { Button } from '@/components/ui/Button';
 
 export function TicketPage() {
   const [loading, setLoading] = useState(true);
@@ -80,13 +81,15 @@ export function TicketPage() {
                 <p className="text-sm font-medium">{ticket.ticketName}</p>
                 <p className="text-xs text-gray-400">Value: {formatCurrency(ticket.value)}</p>
               </div>
-              <button
+              <Button
                 onClick={() => handleUse(ticket.ticketIdx)}
                 disabled={using !== null}
-                className="rounded-lg bg-[#e94560] px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+                loading={using === ticket.ticketIdx}
+                variant="primary"
+                size="sm"
               >
-                {using === ticket.ticketIdx ? '...' : 'Use'}
-              </button>
+                Use
+              </Button>
             </div>
           ))}
         </div>

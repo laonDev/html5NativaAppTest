@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
 
 interface FilterModalProps {
   onClose: () => void;
@@ -24,7 +25,7 @@ export function FilterModal({ onClose, onApply, currentFilters }: FilterModalPro
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold">Filter</h3>
-        <button onClick={onClose} className="text-gray-400">✕</button>
+        <Button onClick={onClose} variant="text" size="sm">✕</Button>
       </div>
 
       {/* Sort */}
@@ -32,28 +33,28 @@ export function FilterModal({ onClose, onApply, currentFilters }: FilterModalPro
         <p className="mb-2 text-sm text-gray-400">Sort by</p>
         <div className="flex gap-2">
           {SORT_OPTIONS.map((opt) => (
-            <button
+            <Button
               key={opt.value}
               onClick={() => setFilters({ ...filters, sortBy: opt.value })}
-              className={`rounded-full px-4 py-2 text-sm ${
-                filters.sortBy === opt.value
-                  ? 'bg-[#e94560] text-white'
-                  : 'bg-[#1a1a2e] text-gray-400'
-              }`}
+              size="md"
+              variant={filters.sortBy === opt.value ? 'primary' : 'ghost'}
+              className="rounded-full"
             >
               {opt.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       {/* Apply */}
-      <button
+      <Button
         onClick={() => { onApply(filters); onClose(); }}
-        className="rounded-lg bg-[#e94560] py-3 text-sm font-bold text-white"
+        variant="primary"
+        size="lg"
+        fullWidth
       >
         Apply
-      </button>
+      </Button>
     </div>
   );
 }

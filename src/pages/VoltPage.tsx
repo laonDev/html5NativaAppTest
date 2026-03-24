@@ -5,6 +5,7 @@ import { useVoltStore } from '@/stores/voltStore';
 import { useBalanceStore } from '@/stores/balanceStore';
 import { VOLT_NAMES, VOLT_COLORS } from '@/types';
 import type { VoltReward } from '@/types';
+import { Button } from '@/components/ui/Button';
 
 export function VoltPage() {
   const [loading, setLoading] = useState(true);
@@ -85,22 +86,28 @@ export function VoltPage() {
 
             {volt.count > 0 && (
               <div className="space-y-1">
-                <button
+                <Button
                   onClick={() => handleOpen(volt.voltType)}
                   disabled={opening !== null}
-                  className="w-full rounded-lg bg-[#0f3460] py-2 text-xs font-bold disabled:opacity-50"
+                  loading={opening === volt.voltType}
+                  variant="secondary"
+                  size="sm"
+                  fullWidth
                 >
-                  {opening === volt.voltType ? '...' : 'Open 1'}
-                </button>
+                  Open 1
+                </Button>
                 {volt.count > 1 && (
-                  <button
+                  <Button
                     onClick={() => handleOpenAll(volt.voltType)}
                     disabled={opening !== null}
-                    className="w-full rounded-lg py-2 text-xs font-bold"
+                    loading={opening === volt.voltType}
+                    variant="secondary"
+                    size="sm"
+                    fullWidth
                     style={{ backgroundColor: VOLT_COLORS[volt.voltType] + '40' }}
                   >
                     Open All
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
@@ -141,12 +148,15 @@ export function VoltPage() {
                   </div>
                 ))}
               </div>
-              <button
+              <Button
                 onClick={() => setRewards([])}
-                className="mt-4 w-full rounded-lg bg-[#e94560] py-3 font-bold"
+                className="mt-4"
+                variant="primary"
+                size="lg"
+                fullWidth
               >
                 OK
-              </button>
+              </Button>
             </motion.div>
           </motion.div>
         )}

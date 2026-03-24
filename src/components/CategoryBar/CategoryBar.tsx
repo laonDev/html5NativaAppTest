@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Button } from '@/components/ui/Button';
 
 const DEFAULT_CATEGORIES = [
   { slug: 'home', name: 'Home' },
@@ -24,17 +25,15 @@ export function CategoryBar({ activeCategory, onCategoryChange }: CategoryBarPro
       style={{ scrollbarWidth: 'none' }}
     >
       {DEFAULT_CATEGORIES.map((cat) => (
-        <button
+        <Button
           key={cat.slug}
           onClick={() => onCategoryChange(cat.slug)}
-          className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-            activeCategory === cat.slug
-              ? 'bg-[#e94560] text-white'
-              : 'bg-[#1a1a2e] text-gray-400 hover:text-white'
-          }`}
+          size="md"
+          variant={activeCategory === cat.slug ? 'primary' : 'ghost'}
+          className="shrink-0 rounded-full"
         >
           {cat.name}
-        </button>
+        </Button>
       ))}
     </div>
   );

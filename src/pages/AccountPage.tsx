@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useBalanceStore, formatBalance } from '@/stores/balanceStore';
 import { accountApi } from '@/api/rest';
+import { Button } from '@/components/ui/Button';
 
 export function AccountPage() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export function AccountPage() {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex items-center justify-between bg-[#16213e] px-4 py-3">
-        <button onClick={() => navigate(-1)} className="text-sm text-gray-400">← Back</button>
+        <Button onClick={() => navigate(-1)} variant="text" size="sm">← Back</Button>
         <h2 className="text-lg font-bold">My Account</h2>
         <div className="w-12" />
       </div>
@@ -51,8 +52,8 @@ export function AccountPage() {
                 className="rounded-lg bg-[#1a1a2e] px-3 py-1.5 text-sm text-white outline-none"
                 maxLength={20}
               />
-              <button onClick={handleSaveNickname} className="text-sm text-[#e94560]">Save</button>
-              <button onClick={() => setEditing(false)} className="text-sm text-gray-400">Cancel</button>
+              <Button onClick={handleSaveNickname} variant="primary" size="sm">Save</Button>
+              <Button onClick={() => setEditing(false)} variant="text" size="sm">Cancel</Button>
             </div>
           ) : (
             <button onClick={() => setEditing(true)} className="text-lg font-bold">

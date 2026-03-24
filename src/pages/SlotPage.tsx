@@ -6,6 +6,7 @@ import { useBalanceStore } from '@/stores/balanceStore';
 import { useVoltStore } from '@/stores/voltStore';
 import { useTicketStore } from '@/stores/ticketStore';
 import type { SpinResultMessage } from '@/types';
+import { Button } from '@/components/ui/Button';
 
 export function SlotPage() {
   const navigate = useNavigate();
@@ -56,9 +57,9 @@ export function SlotPage() {
     <div className="flex h-full flex-col bg-black">
       {/* Slot Header */}
       <div className="flex items-center justify-between bg-[#16213e] px-4 py-2">
-        <button onClick={() => navigate('/lobby')} className="text-sm text-gray-400">
+        <Button onClick={() => navigate('/lobby')} variant="text" size="sm">
           ← Back
-        </button>
+        </Button>
         <h2 className="text-sm font-medium">{title}</h2>
         <div className="w-12" />
       </div>

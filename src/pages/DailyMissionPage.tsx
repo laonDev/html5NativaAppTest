@@ -4,6 +4,7 @@ import { missionApi } from '@/api/rest';
 import { useMissionStore } from '@/stores/missionStore';
 import { useCountdown } from '@/hooks/useCountdown';
 import { MISSION_STATUS, MISSION_TYPES } from '@/types';
+import { Button } from '@/components/ui/Button';
 
 export function DailyMissionPage() {
   const [loading, setLoading] = useState(true);
@@ -122,13 +123,15 @@ export function DailyMissionPage() {
                   <span className="text-sm font-medium">{mission.name}</span>
                 </div>
                 {mission.status === MISSION_STATUS.ACHIEVED && (
-                  <button
+                  <Button
                     onClick={() => handleCollect(mission.missionIndex)}
                     disabled={collecting !== null}
-                    className="rounded-lg bg-[#e94560] px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
+                    loading={collecting === mission.missionIndex}
+                    variant="primary"
+                    size="sm"
                   >
-                    {collecting === mission.missionIndex ? '...' : 'Collect'}
-                  </button>
+                    Collect
+                  </Button>
                 )}
                 {mission.status === MISSION_STATUS.COLLECTED && (
                   <span className="text-xs text-green-400">✓</span>
@@ -158,22 +161,32 @@ export function DailyMissionPage() {
       {/* Action buttons */}
       <div className="mt-4 space-y-2">
         {hasCollectable && (
-          <button
+          <Button
             onClick={handleCollectAll}
             disabled={collecting !== null}
-            className="w-full rounded-xl bg-[#e94560] py-3 font-bold text-white disabled:opacity-50"
+            loading={collecting === -1}
+            loadingLabel="Collecting..."
+            variant="primary"
+            size="lg"
+            fullWidth
+            className="!rounded-xl"
           >
-            {collecting === -1 ? 'Collecting...' : 'Collect All'}
-          </button>
+            Collect All
+          </Button>
         )}
         {allCollected && overallStatus !== 3 && (
-          <button
+          <Button
             onClick={handleComplete}
             disabled={collecting !== null}
-            className="w-full rounded-xl bg-yellow-500 py-3 font-bold text-black disabled:opacity-50"
+            loading={collecting === -2}
+            loadingLabel="Completing..."
+            variant="secondary"
+            size="lg"
+            fullWidth
+            className="!rounded-xl !bg-yellow-500 !text-black"
           >
-            {collecting === -2 ? 'Completing...' : 'Complete All Missions!'}
-          </button>
+            Complete All Missions!
+          </Button>
         )}
       </div>
     </div>

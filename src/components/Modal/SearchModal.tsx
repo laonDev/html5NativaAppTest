@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useGameStore } from '@/stores/gameStore';
 import type { Game } from '@/types';
+import { Button } from '@/components/ui/Button';
 
 interface SearchModalProps {
   onClose: () => void;
@@ -32,9 +33,9 @@ export function SearchModal({ onClose, onGameClick }: SearchModalProps) {
           placeholder="Search games..."
           className="flex-1 rounded-lg bg-[#1a1a2e] px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none"
         />
-        <button onClick={onClose} className="text-sm text-gray-400">
+        <Button onClick={onClose} variant="text" size="sm">
           Cancel
-        </button>
+        </Button>
       </div>
 
       <div className="max-h-80 overflow-y-auto">
