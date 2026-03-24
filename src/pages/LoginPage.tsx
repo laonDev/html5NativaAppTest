@@ -63,6 +63,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
   const [appVersion, setAppVersion] = useState('1.0.0');
 
@@ -80,6 +81,28 @@ export function LoginPage() {
   const setTournament = useTournamentStore((s) => s.setTournament);
   const setCategories = useGameStore((s) => s.setCategories);
   const setGames = useGameStore((s) => s.setGames);
+
+  // ── Error categorization helpers ─────────────────────────────────────────
+  const isNetworkError = (err: unknown): boolean => {
+    if (typeof err === 'string') {
+      const lower = err.toLowerCase();
+      return lower.includes('network') || lower.includes('timeout') || lower.includes('connect');
+    }
+    if (err && typeof err === 'object') {
+      const e = err as Record<string, unknown>;
+      return e.code === 'ERR_NETWORK' || e.code === 'ECONNABORTED' || e.message === 'Network Error';
+    }
+    return false;
+  };
+
+  const isAuthError = (err: unknown): boolean => {
+    if (err && typeof err === 'object') {
+      const e = err as Record<string, unknown>;
+      const authCodes = ['INVALID_PASSWORD', 'WRONG_PASSWORD', 'INVALID_CREDENTIALS', 'AUTH_FAILED'];
+      return typeof e.code === 'string' && authCodes.includes(e.code);
+    }
+    return false;
+  };
 
   useEffect(() => {
     CapApp.getInfo()
@@ -129,7 +152,13 @@ export function LoginPage() {
       navigate('/lobby', { replace: true });
     } catch (err) {
       console.error('Login error:', err);
-      setEmailError('Login failed. Please check your credentials.');
+      if (isNetworkError(err)) {
+        setGeneralError('Network error. Please check your connection.');
+      } else if (isAuthError(err)) {
+        setEmailError('Invalid email or password.');
+      } else {
+        setGeneralError('Server error. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
@@ -138,6 +167,7 @@ export function LoginPage() {
   // ── Validate form fields ──────────────────────────────────────────────────
   const validate = (): boolean => {
     let valid = true;
+    setGeneralError('');
 
     if (!email.trim()) {
       setEmailError('Email is Required');
@@ -163,6 +193,7 @@ export function LoginPage() {
   const handleSubmit = async () => {
     if (!validate()) return;
 
+    setGeneralError('');
     setLoading(true);
     try {
       const serverInfo = await accountApi.serverInfo();
@@ -175,7 +206,13 @@ export function LoginPage() {
       await handleLogin(authInfo);
     } catch (err) {
       console.error('Register/Login error:', err);
-      setEmailError('Connection failed. Please try again.');
+      if (isNetworkError(err)) {
+        setGeneralError('Network error. Please check your connection.');
+      } else if (isAuthError(err)) {
+        setEmailError('Invalid email or password.');
+      } else {
+        setGeneralError('Server error. Please try again later.');
+      }
       setLoading(false);
     }
   };
@@ -277,6 +314,21 @@ export function LoginPage() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* LB_General_Error */}
+        <AnimatePresence>
+          {generalError && (
+            <motion.p
+              key="generalError"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-2 px-1 text-xs text-red-500"
+            >
+              {generalError}
+            </motion.p>
+          )}
+        </AnimatePresence>
 
         {/* ── IMG_Blue_Btn (REGISTER / LOG IN) ── */}
         <motion.button
