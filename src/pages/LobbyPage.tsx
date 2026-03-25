@@ -5,6 +5,7 @@ import { GameGrid } from '@/components/GameGrid/GameGrid';
 import { SearchModal } from '@/components/Modal/SearchModal';
 import { FilterModal, type FilterState } from '@/components/Modal/FilterModal';
 import { useModal } from '@/components/Modal/ModalProvider';
+import { ScrollView } from '@/components/ui/ScrollView';
 import { useGameStore } from '@/stores/gameStore';
 import { casinoApi } from '@/api/rest';
 import type { Game } from '@/types';
@@ -80,9 +81,9 @@ export function LobbyPage() {
       </div>
 
       {/* Game Grid */}
-      <div className="flex-1 overflow-y-auto">
+      <ScrollView className="flex-1">
         <GameGrid games={filteredGames} onGameClick={handleGameClick} />
-      </div>
+      </ScrollView>
     </div>
   );
 }

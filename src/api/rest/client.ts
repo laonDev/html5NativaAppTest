@@ -32,6 +32,13 @@ if (USE_MOCK) {
   console.log('[API] Mock mode enabled — no VITE_API_BASE_URL set');
   setupMockInterceptor(client);
 } else {
+  console.log(
+    '[API] Real server mode\n',
+    ' REST :', import.meta.env.VITE_API_BASE_URL, '\n',
+    ' SUPR :', import.meta.env.VITE_SUPR_API_BASE_URL ?? '(not set)', '\n',
+    ' Socket:', import.meta.env.VITE_SOCKET_URL ?? '(not set)', '\n',
+    ' STOMP :', import.meta.env.VITE_STOMP_URL ?? '(not set)',
+  );
   // Real API: server wraps responses as { system, content, error? }
   client.interceptors.response.use(
     (response) => {
