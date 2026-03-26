@@ -5,6 +5,7 @@ import { useTournamentStore } from '@/stores/tournamentStore';
 import { useCountdown } from '@/hooks/useCountdown';
 import { formatCurrency } from '@/utils/format';
 import { PRIZE_TYPES } from '@/types';
+import { ScrollView } from '@/components/ui/ScrollView';
 
 type Tab = 'present' | 'previous';
 
@@ -127,7 +128,7 @@ export function TournamentPage() {
 
               {/* Leaderboard */}
               <h3 className="mb-2 text-sm font-medium text-gray-400">Leaderboard</h3>
-              <div className="space-y-2">
+              <ScrollView className="max-h-80 space-y-2 rounded-lg pr-1">
                 {rankings.slice(0, 100).map((rank, idx) => (
                   <motion.div
                     key={rank.userId}
@@ -148,7 +149,7 @@ export function TournamentPage() {
                     <span className="text-sm font-bold">{rank.point.toLocaleString()}</span>
                   </motion.div>
                 ))}
-              </div>
+              </ScrollView>
 
               {/* Prize table */}
               <h3 className="mb-2 mt-6 text-sm font-medium text-gray-400">Prizes</h3>
@@ -175,7 +176,7 @@ export function TournamentPage() {
           {history.length === 0 ? (
             <div className="py-12 text-center text-gray-500">No previous tournaments</div>
           ) : (
-            <div className="space-y-4">
+            <ScrollView className="max-h-[60vh] space-y-4 pr-1">
               {history.map((h) => (
                 <div key={h.seq} className="rounded-xl bg-[#16213e] p-4">
                   <p className="mb-1 text-sm font-bold">Tournament #{h.tournamentData.tournamentId}</p>
@@ -190,7 +191,7 @@ export function TournamentPage() {
                   )}
                 </div>
               ))}
-            </div>
+            </ScrollView>
           )}
         </div>
       )}

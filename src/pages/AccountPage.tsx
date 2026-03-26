@@ -4,10 +4,12 @@ import { useAuthStore } from '@/stores/authStore';
 import { useBalanceStore, formatBalance } from '@/stores/balanceStore';
 import { accountApi } from '@/api/rest';
 import { Button } from '@/components/ui/Button';
+import { ListItem } from '@/components/ListItem/ListItem';
 
 export function AccountPage() {
   const navigate = useNavigate();
   const userInfo = useAuthStore((s) => s.userInfo);
+  const logout = useAuthStore((s) => s.logout);
   const balance = useBalanceStore((s) => s.balance);
   const viccon = useBalanceStore((s) => s.viccon);
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
@@ -22,6 +24,11 @@ export function AccountPage() {
     } catch (err) {
       console.error('Nickname change error:', err);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -80,13 +87,21 @@ export function AccountPage() {
 
         {/* Menu Items */}
         <div className="space-y-2">
-          <button
+          <ListItem
             onClick={() => navigate('/history')}
-            className="flex w-full items-center justify-between rounded-xl bg-[#16213e] p-4"
+            title="Earned History"
+            subtitle="View cash, bonus and ticket history"
+            right="→"
+          />
+          <Button
+            onClick={handleLogout}
+            variant="secondary"
+            size="lg"
+            fullWidth
+            className="!rounded-xl"
           >
-            <span className="text-sm">Earned History</span>
-            <span className="text-gray-500">→</span>
-          </button>
+            Logout
+          </Button>
         </div>
       </div>
     </div>
