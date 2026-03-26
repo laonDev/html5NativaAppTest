@@ -12,5 +12,6 @@ class CustomViewController: CAPBridgeViewController {
         super.capacitorDidLoad()
 
         bridge?.registerPluginInstance(StorageBridgePlugin())
+        bridge?.registerPluginInstance(SecureStoragePlugin())
     }
 }

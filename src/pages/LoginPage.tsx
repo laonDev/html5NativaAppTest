@@ -11,6 +11,8 @@ import { useBingoStore } from '@/stores/bingoStore';
 import { useMissionStore } from '@/stores/missionStore';
 import { useTournamentStore } from '@/stores/tournamentStore';
 import { useGameStore } from '@/stores/gameStore';
+import type { AuthInfo } from '@/types';
+import { StorageBridge } from '../native/storage/index'
 
 // ─── SVG Icons ───────────────────────────────────────────────────────────────
 function EyeOpenIcon() {
@@ -242,6 +244,7 @@ export function LoginPage() {
           <span className="text-3xl font-black tracking-wider text-[#00c8ff]">SUPRVIC</span>
         </div>
         <p className="mt-1 text-xs font-semibold tracking-[0.4em] text-[#00c8ff]/70">CASINO</p>
+        <h1>TestTextArea</h1>
       </div>
 
       {/* ── Login_Box ── */}

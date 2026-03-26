@@ -2,8 +2,6 @@ package com.igaming.html5app.plugin;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
-
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -33,8 +31,6 @@ public class StorageBridgePlugin extends Plugin {
         JSObject ret = new JSObject();
         ret.put("value", value);
 
-        Log.d("StoragePlugin", "getItem called / key=" + key + ", value=" + value);
-
         call.resolve(ret);
     }
 
@@ -44,8 +40,6 @@ public class StorageBridgePlugin extends Plugin {
 
         SharedPreferences prefs = getContext().getSharedPreferences("app_storage", Context.MODE_PRIVATE);
         prefs.edit().remove(key).apply();
-
-        Log.d("StoragePlugin", "removeItem called / key=" + key);
 
         call.resolve();
     }
