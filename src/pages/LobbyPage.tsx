@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CategoryBar } from '@/components/CategoryBar/CategoryBar';
+import { FloatingActionGroup } from '@/components/FloatingActionGroup/FloatingActionGroup';
 import { LobbySectionRow } from '@/components/LobbySectionRow/LobbySectionRow';
 import { SlotCardItem } from '@/components/SlotCardItem/SlotCardItem';
 import { SearchModal } from '@/components/Modal/SearchModal';
@@ -17,10 +18,20 @@ interface LobbySection {
   items: Game[];
 }
 
+const SECONDARY_CATEGORY_MAP: Record<string, string[]> = {
+  home: [],
+  hot: ['top', 'new', 'picks', 'jackpot'],
+  slot: ['top', 'new', 'jackpot', 'megaways'],
+  live: ['top live', 'roulette', 'blackjack', 'baccarat', 'others'],
+  promo: ['all', 'new', 'games', 'the end'],
+  mypick: ['slot'],
+};
+
 export function LobbyPage() {
   const navigate = useNavigate();
   const { openModal, closeModal } = useModal();
   const [activeCategory, setActiveCategory] = useState('home');
+  const [activeSubCategory, setActiveSubCategory] = useState('');
   const [filters, setFilters] = useState<FilterState>({ provider: '', sortBy: 'popular' });
 
   const games = useGameStore((s) => s.games);
@@ -32,6 +43,8 @@ export function LobbyPage() {
     const hotCategory = categories.find((category) => category.slug === 'hot');
     return new Set(hotCategory?.['game-ids'] ?? []);
   }, [categories]);
+
+  const secondaryCategories = useMemo(() => SECONDARY_CATEGORY_MAP[activeCategory] ?? [], [activeCategory]);
 
   const filteredGames = useMemo(() => {
     let gameList = Object.values(games);
@@ -52,8 +65,12 @@ export function LobbyPage() {
       gameList = gameList.filter((g) => g.new).concat(gameList.filter((g) => !g.new));
     }
 
+    if (activeSubCategory === 'new') {
+      gameList = gameList.filter((game) => game.new);
+    }
+
     return gameList;
-  }, [games, categories, activeCategory, favorites, filters]);
+  }, [games, categories, activeCategory, activeSubCategory, favorites, filters]);
 
   const handleGameClick = useCallback(async (game: Game) => {
     navigate(`/slot?slotType=${game['game-id']}&title=${encodeURIComponent(game.title)}`);
@@ -131,25 +148,32 @@ export function LobbyPage() {
     );
   };
 
+  const handleCategoryChange = useCallback((slug: string) => {
+    setActiveCategory(slug);
+    const nextSubCategories = SECONDARY_CATEGORY_MAP[slug] ?? [];
+    setActiveSubCategory(nextSubCategories[0] ?? '');
+  }, []);
+
+  const handleSubCategoryChange = useCallback((slug: string) => {
+    setActiveSubCategory(slug);
+  }, []);
+
   return (
     <div className="flex h-full flex-col">
-      <CategoryBar activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
+      <CategoryBar
+        activeCategory={activeCategory}
+        subCategories={secondaryCategories}
+        activeSubCategory={activeSubCategory}
+        onCategoryChange={handleCategoryChange}
+        onSubCategoryChange={handleSubCategoryChange}
+      />
 
-      {/* Floating buttons */}
-      <div className="fixed bottom-20 right-4 z-30 flex flex-col gap-2" style={{ bottom: 'calc(60px + var(--safe-bottom))' }}>
-        <button
-          onClick={openSearch}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e94560] text-xl shadow-lg"
-        >
-          🔍
-        </button>
-        <button
-          onClick={openFilter}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0f3460] text-xl shadow-lg"
-        >
-          ⚙️
-        </button>
-      </div>
+      <FloatingActionGroup
+        items={[
+          { key: 'search', label: 'Search', icon: '🔍', onClick: openSearch },
+          { key: 'filter', label: 'Filter', icon: '⏷', onClick: openFilter },
+        ]}
+      />
 
       {/* Home: horizontal sections(2 rows), Others: vertical list */}
       <ScrollView className="flex-1">
