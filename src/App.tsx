@@ -13,6 +13,7 @@ import { VicconPage } from './pages/VicconPage';
 import { TicketPage } from './pages/TicketPage';
 import { VoltPage } from './pages/VoltPage';
 import { CrashGamePage } from './pages/CrashGamePage';
+import { SpineToolPage } from './pages/SpineToolPage';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/slot" element={<SlotPage />} />
         <Route path="/crash" element={<CrashGamePage />} />
+        <Route path="/spine-tool" element={<SpineToolPage />} />
         <Route element={<MainLayout />}>
           <Route path="/lobby" element={<LobbyPage />} />
           <Route path="/account" element={<AccountPage />} />

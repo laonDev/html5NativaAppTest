@@ -1,0 +1,77 @@
+{
+  "skeleton": {
+    "hash": "test_bounce",
+    "spine": "4.2.0",
+    "x": -32,
+    "y": 0,
+    "width": 64,
+    "height": 128
+  },
+  "bones": [
+    { "name": "root" },
+    { "name": "body", "parent": "root", "length": 60, "y": 50 },
+    { "name": "head", "parent": "body", "length": 20, "y": 40 }
+  ],
+  "slots": [
+    { "name": "body", "bone": "body", "attachment": "body" },
+    { "name": "head", "bone": "head", "attachment": "head" }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "body": {
+          "body": { "width": 64, "height": 92 }
+        },
+        "head": {
+          "head": { "width": 32, "height": 36 }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "idle": {
+      "bones": {
+        "body": {
+          "translate": [
+            { "time": 0, "x": 0, "y": 0 },
+            { "time": 0.4, "x": 0, "y": 12, "curve": "stepped" },
+            { "time": 0.6, "x": 0, "y": 12 },
+            { "time": 1, "x": 0, "y": 0 }
+          ],
+          "rotate": [
+            { "time": 0, "value": 0 },
+            { "time": 0.5, "value": 3 },
+            { "time": 1, "value": 0 }
+          ]
+        },
+        "head": {
+          "rotate": [
+            { "time": 0, "value": 0 },
+            { "time": 0.3, "value": -5 },
+            { "time": 0.7, "value": 5 },
+            { "time": 1, "value": 0 }
+          ]
+        }
+      }
+    },
+    "jump": {
+      "bones": {
+        "body": {
+          "translate": [
+            { "time": 0, "x": 0, "y": 0 },
+            { "time": 0.15, "x": 0, "y": -10 },
+            { "time": 0.5, "x": 0, "y": 60 },
+            { "time": 0.8, "x": 0, "y": 0 }
+          ],
+          "scale": [
+            { "time": 0, "x": 1, "y": 1 },
+            { "time": 0.15, "x": 1.1, "y": 0.85 },
+            { "time": 0.5, "x": 0.9, "y": 1.15 },
+            { "time": 0.8, "x": 1, "y": 1 }
+          ]
+        }
+      }
+    }
+  }
+}
