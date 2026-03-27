@@ -19,3 +19,17 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Capacitor core
+-keep class com.getcapacitor.** { *; }
+
+# Capacitor plugin classes
+-keep class * extends com.getcapacitor.Plugin { *; }
+
+# Custom plugins
+-keep class com.igaming.html5app.plugin.** { *; }
+
+# Keep annotations
+-keepattributes *Annotation*
+
+# AndroidX Security Crypto
+-keep class androidx.security.crypto.** { *; }

@@ -10,7 +10,11 @@
     "preview": "vite preview",
     "cap:sync": "npx cap sync",
     "cap:android": "npx cap open android",
-    "cap:ios": "npx cap open ios"
+    "cap:ios": "npx cap open ios",
+    "android:debug": "cd android && ./gradlew assembleDebug",
+    "android:release": "cd android && ./gradlew assembleRelease",
+    "android:aab": "cd android && ./gradlew bundleRelease",
+    "android:clean": "cd android && ./gradlew clean"
   },
   "dependencies": {
     "@capacitor/android": "^8.1.0",

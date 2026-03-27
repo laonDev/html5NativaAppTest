@@ -9,7 +9,7 @@ import Foundation
 import Capacitor
 
 @objc(LoggerBridge)
-public class LoggerBridge: CAPPlugin {
+public class LoggerBridgePlugin: CAPPlugin {
 
     @objc func log(_ call: CAPPluginCall) {
         let message = call.getString("message") ?? ""

@@ -13,6 +13,7 @@
 import { StorageBridge } from '@/native/storage'
 import { SecureStorage } from '@/native/secure'
 import { LoggerBridge } from '@/native/logger'
+import { AppInfoBridge } from '@/native/appInfo'
 
 export const NativeUtil = {
   /**
@@ -76,5 +77,19 @@ export const NativeUtil = {
      */
     error: (message: string) =>
       LoggerBridge.error({ message }),
+  },
+  /**
+   * App Info capacitor 기본 외 확장 정보 전달
+   * Debug, Release 등
+   */
+  appInfo: {
+    getAppInfo: async () => {
+        const info = await AppInfoBridge.getAppInfo()
+        return {
+        isDebug: info.isDebug,
+        version: info.versionName,
+        build: info.versionCode,
+        }
+    },
   },
 }
