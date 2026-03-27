@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,12 +15,28 @@ export function ModalProvider({ children }: { children: ReactNode }) {
   const [modal, setModal] = useState<{ content: ReactNode; key: string } | null>(null);
 
   const openModal = useCallback((content: ReactNode, key = 'default') => {
-    setModal({ content, key });
+    setModal((prev) => {
+      if (prev?.key === key) {
+        return { content, key };
+      }
+      return { content, key };
+    });
   }, []);
 
   const closeModal = useCallback(() => {
     setModal(null);
   }, []);
+
+  useEffect(() => {
+    if (!modal) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeModal();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [closeModal, modal]);
 
   return (
     <ModalContext.Provider value={{ openModal, closeModal }}>

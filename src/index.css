@@ -33,3 +33,7 @@ body {
 ::-webkit-scrollbar {
   display: none;
 }
+
+[data-scrollbar='hidden']::-webkit-scrollbar {
+  display: none;
+}
