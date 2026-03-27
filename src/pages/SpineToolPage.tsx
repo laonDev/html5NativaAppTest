@@ -45,7 +45,7 @@ export function SpineToolPage() {
 
   // ── Fetch manifest ──────────────────────────────────────────────────────────
   useEffect(() => {
-    fetch('/_spine/manifest')
+    fetch(`${import.meta.env.BASE_URL}assets/spine/manifest.json`)
       .then((r) => r.json())
       .then((data: { items: SpineItem[] }) => setItems(data.items))
       .catch(() => setItems([]));
@@ -73,7 +73,7 @@ export function SpineToolPage() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     try {
-      const assetManager = new AssetManager('');
+      const assetManager = new AssetManager(import.meta.env.BASE_URL);
       assetManager.loadTextureAtlas(item.atlas);
       assetManager.loadJson(item.json);
 
