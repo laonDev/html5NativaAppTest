@@ -13,6 +13,7 @@ interface CategoryBarProps {
   activeSubCategory: string;
   onCategoryChange: (slug: string) => void;
   onSubCategoryChange: (slug: string) => void;
+  className?: string;
 }
 
 export function CategoryBar({
@@ -21,11 +22,12 @@ export function CategoryBar({
   activeSubCategory,
   onCategoryChange,
   onSubCategoryChange,
+  className,
 }: CategoryBarProps) {
   const useScrollableSubBar = subCategories.length > 4;
 
   return (
-    <div className="shrink-0 border-b border-[#1b2a5c] bg-[#11256e]">
+    <div className={['shrink-0 border-b border-[#1b2a5c] bg-[#11256e]', className].filter(Boolean).join(' ')}>
       <div className="grid h-10 grid-cols-6">
         {PRIMARY_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat.slug;
@@ -38,7 +40,7 @@ export function CategoryBar({
                 'relative flex items-center justify-center border-r border-[#273d86] px-1 text-[13px] font-semibold tracking-[0.01em] text-[#f3f7ff]',
                 'last:border-r-0',
                 isActive
-                  ? 'bg-gradient-to-b from-[#4c3cff] to-[#2a4dff] shadow-[inset_0_-2px_0_#8ec8ff]'
+                  ? 'bg-gradient-to-b from-[#4c3cff] to-[#2a4dff]'
                   : 'bg-gradient-to-b from-[#1f3a93] to-[#162c7e]',
               ].join(' ')}
               aria-pressed={isActive}
