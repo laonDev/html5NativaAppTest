@@ -1,0 +1,10 @@
+
+skeleton.png
+size: 64, 128
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+head
+  bounds: 16, 0, 32, 36
+body
+  bounds: 0, 36, 64, 92

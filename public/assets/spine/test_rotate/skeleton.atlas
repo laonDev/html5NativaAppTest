@@ -1,0 +1,8 @@
+
+skeleton.png
+size: 128, 128
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+star
+  bounds: 0, 0, 128, 128

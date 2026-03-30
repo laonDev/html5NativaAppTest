@@ -1,0 +1,73 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [dev]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx vite build
+
+      # SPA fallback for GitHub Pages
+      - run: cp dist/index.html dist/404.html
+
+      # Generate spine manifest
+      - name: Generate spine manifest
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          const spineDir = 'dist/assets/spine';
+          const items = [];
+          if (fs.existsSync(spineDir)) {
+            for (const name of fs.readdirSync(spineDir)) {
+              const dir = path.join(spineDir, name);
+              if (!fs.statSync(dir).isDirectory()) continue;
+              const files = fs.readdirSync(dir);
+              const json = files.find(f => f.endsWith('.json'));
+              const atlas = files.find(f => f.endsWith('.atlas'));
+              if (json && atlas) {
+                items.push({
+                  name,
+                  json: 'assets/spine/' + name + '/' + json,
+                  atlas: 'assets/spine/' + name + '/' + atlas,
+                });
+              }
+            }
+          }
+          fs.writeFileSync(
+            path.join(spineDir, 'manifest.json'),
+            JSON.stringify({ items }, null, 2)
+          );
+          console.log('Spine manifest:', JSON.stringify(items.map(i => i.name)));
+          "
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

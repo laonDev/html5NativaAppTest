@@ -33,7 +33,7 @@ export function Header() {
   const isVoltMax = totalVolt >= 99;
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between bg-gradient-to-b from-[#1a0a35] to-[#16213e] px-4 py-2.5 shadow-lg shadow-black/40">
+    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/10 bg-gradient-to-b from-[#1a0a35]/95 to-[#16213e]/95 px-4 py-2.5 shadow-lg shadow-black/40 backdrop-blur-sm">
 
       {/* BTN_Balance */}
       <button
