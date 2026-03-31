@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
+import { Button } from '@/components/ui/Button';
 import type { Game } from '@/types';
 
 type GamePrimaryCategory = 'home' | 'hot' | 'slot' | 'live' | 'promo' | 'mypick';
@@ -63,8 +64,15 @@ function toUpper(value: string) {
 }
 
 function getGameImageUrl(game: Game) {
-  const imgSrc = game['game-Image']?.src;
-  return imgSrc && imgSrc.ext.length > 0 ? `${imgSrc.name}.${imgSrc.ext[0]}` : '';
+  const mockThumbnails = [
+    '/mock-cdn/slots/BTN_Thumbnail_00.png',
+    '/mock-cdn/slots/BTN_Thumbnail_01.png',
+    '/mock-cdn/slots/BTN_Thumbnail_02.png',
+    '/mock-cdn/slots/BTN_Thumbnail_03.png',
+    '/mock-cdn/slots/BTN_Thumbnail_04.png',
+    '/mock-cdn/slots/BTN_Thumbnail_05.png',
+  ];
+  return mockThumbnails[(game['game-id'] * 7) % mockThumbnails.length];
 }
 
 function highlightMatch(text: string, query: string) {
@@ -95,7 +103,6 @@ export function SearchDrawer({
   onNavigate,
   onGameClick,
 }: SearchDrawerProps) {
-  const [menuQuery, setMenuQuery] = useState('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     hot: false,
     slot: false,
@@ -140,43 +147,6 @@ export function SearchDrawer({
     }));
   }, [secondaryCategoryMap]);
 
-  const filteredActions = useMemo(() => {
-    const trimmed = menuQuery.trim().toLowerCase();
-    if (!trimmed) return [];
-
-    const actions: Array<{ key: string; label: string; onClick: () => void }> = [];
-    groups.forEach((group) => {
-      group.items.forEach((item) => {
-        if (item.label.toLowerCase().includes(trimmed)) {
-          if (item.type === 'route' && item.path) {
-            actions.push({
-              key: `${group.key}-${item.key}`,
-              label: `${group.title} / ${item.label}`,
-              onClick: () => onNavigate(item.path!),
-            });
-          } else if (item.type === 'lobby' && item.category) {
-            actions.push({
-              key: `${group.key}-${item.key}`,
-              label: `${group.title} / ${item.label}`,
-              onClick: () => onSelectLobbyCategory(item.category!),
-            });
-          }
-        }
-
-        (item.children ?? []).forEach((child) => {
-          if (!child.label.toLowerCase().includes(trimmed)) return;
-          actions.push({
-            key: `${group.key}-${item.key}-${child.key}`,
-            label: `${group.title} / ${item.label} / ${child.label}`,
-            onClick: () => onSelectLobbyCategory(child.category!, child.subCategory),
-          });
-        });
-      });
-    });
-
-    return actions;
-  }, [groups, menuQuery, onNavigate, onSelectLobbyCategory]);
-
   const renderLobbyItem = (item: GroupItem) => {
     const hasChildren = (item.children?.length ?? 0) > 0;
     const isExpanded = expanded[item.key];
@@ -187,8 +157,8 @@ export function SearchDrawer({
         <button
           type="button"
           className={[
-            'flex w-full items-center justify-between py-1.5 text-left text-[22px] font-semibold leading-none tracking-[0.01em]',
-            isActive ? 'text-white' : 'text-[#8fb0ff]',
+            'flex w-full items-center justify-between py-1.5 text-left text-base font-bold',
+            isActive ? 'text-white' : 'text-[#b8c9ff]',
           ].join(' ')}
           onClick={() => {
             if (hasChildren) {
@@ -201,7 +171,7 @@ export function SearchDrawer({
           }}
         >
           <span>{item.label}</span>
-          <span className="text-[18px] text-[#93b3ff]">{hasChildren ? (isExpanded ? '˄' : '˅') : '›'}</span>
+          <span className="text-base text-[#c8d8ff]">{hasChildren ? (isExpanded ? '˄' : '˅') : '›'}</span>
         </button>
 
         {hasChildren && isExpanded && (
@@ -213,13 +183,13 @@ export function SearchDrawer({
                   key={child.key}
                   type="button"
                   className={[
-                    'flex w-full items-center justify-between py-1 text-left text-[18px] leading-none',
-                    isSubActive ? 'text-white' : 'text-[#7e9ae0]',
+                    'flex w-full items-center justify-between py-1 text-left text-sm',
+                    isSubActive ? 'text-white' : 'text-[#9fb3ff]',
                   ].join(' ')}
                   onClick={() => onSelectLobbyCategory(child.category!, child.subCategory)}
                 >
                   <span>{child.label}</span>
-                  <span className="text-[16px] text-[#7e9ae0]">›</span>
+                  <span className="text-sm text-[#9fb3ff]">›</span>
                 </button>
               );
             })}
@@ -254,91 +224,65 @@ export function SearchDrawer({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.24, ease: 'easeOut' }}
-            className="fixed right-0 top-0 flex h-full w-[78vw] max-w-[340px] flex-col bg-[#0f1f86] px-4 py-5 shadow-[-8px_0_24px_rgba(0,0,0,0.35)]"
+            className="fixed right-0 top-0 flex h-full w-[78vw] max-w-[320px] flex-col bg-[#11298b] px-4 py-5 shadow-[-8px_0_24px_rgba(0,0,0,0.35)]"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mb-4 flex items-center gap-2 text-white">
-              <span className="text-lg">⌂</span>
-              <span className="text-sm font-semibold tracking-[0.02em]">HOME</span>
+            <div className="mb-3 flex items-center justify-between border-b border-[#6d7fc6] pb-2">
+              <h2 className="text-xl font-extrabold tracking-[0.03em] text-white">SEARCH</h2>
+              <Button variant="text" size="sm" onClick={onClose}>
+                ✕
+              </Button>
             </div>
 
-            <div className="mb-4">
+            <div className="mb-3 rounded-md bg-[#0f226f] p-2">
               <button
                 type="button"
                 onClick={() => setSearchPageOpen(true)}
-                className="flex h-11 w-full items-center rounded-full border border-[#899bde] bg-[#6472b5] px-4"
+                className="flex h-10 w-full items-center rounded-md border border-[#6d7fc6] bg-[#132a7a] px-3"
               >
-                <span className="flex-1 text-left text-sm text-[#d0d7ff]/90">Search...</span>
-                <span className="text-xl text-white/90">⌕</span>
+                <span className="flex-1 text-left text-sm text-[#b8c9ff]">Search...</span>
+                <span className="text-base text-[#c8d8ff]">⌕</span>
               </button>
             </div>
 
-            <div className="mb-5 grid grid-cols-3 gap-2">
+            <div className="mb-4 grid grid-cols-3 gap-2">
               {['DEPOSIT', 'PROMO', 'EARNED'].map((quick) => (
-                <button
+                <Button
                   key={quick}
-                  type="button"
-                  className="rounded-xl border border-[#2a5dff] bg-gradient-to-b from-[#2257f1] to-[#1736a8] py-2 text-xs font-semibold text-white"
+                  size="sm"
+                  variant="ghost"
+                  className="h-10 text-xs"
                 >
                   {quick}
-                </button>
+                </Button>
               ))}
             </div>
 
             <div className="flex-1 overflow-y-auto pr-1 [scrollbar-color:#5e79d6_transparent] [scrollbar-width:thin]">
-              {menuQuery.trim().length > 0 ? (
-                <div className="space-y-1 pb-2">
-                  <h3 className="mb-2 border-b border-[#8da8f2] pb-1 text-[22px] font-bold leading-none text-white">SEARCH</h3>
-                  {filteredActions.length === 0 ? (
-                    <p className="py-4 text-sm text-[#9bb3f1]">No menu matched</p>
-                  ) : (
-                    filteredActions.map((action) => (
-                      <button
-                        key={action.key}
-                        type="button"
-                        className="block w-full rounded-md px-2 py-1.5 text-left text-sm text-white/90 hover:bg-[#1a348f]"
-                        onClick={action.onClick}
-                      >
-                        {action.label}
-                      </button>
-                    ))
-                  )}
-                </div>
-              ) : (
-                groups.map((group) => (
-                  <section key={group.key} className="mb-4">
-                    <h3 className="mb-2 border-b border-[#8da8f2] pb-1 text-[30px] font-bold leading-none text-white">{group.title}</h3>
-                    <div className="space-y-1">
-                      {group.items.map((item) => {
-                        if (item.type === 'lobby') {
-                          return renderLobbyItem(item);
-                        }
-                        return (
-                          <button
-                            key={item.key}
-                            type="button"
-                            className="flex w-full items-center justify-between py-1.5 text-left text-[22px] font-semibold leading-none text-[#8fb0ff]"
-                            onClick={() => onNavigate(item.path ?? '/lobby')}
-                          >
-                            <span>{item.label}</span>
-                            <span className="text-[16px] text-[#93b3ff]">›</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </section>
-                ))
-              )}
+              {groups.map((group) => (
+                <section key={group.key} className="mb-3 border-b border-[#5e72bf] pb-2">
+                  <h3 className="mb-1 text-base font-bold text-white">{group.title}</h3>
+                  <div className="space-y-1">
+                    {group.items.map((item) => {
+                      if (item.type === 'lobby') {
+                        return renderLobbyItem(item);
+                      }
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          className="flex w-full items-center justify-between py-1.5 text-left text-base font-bold text-[#b8c9ff]"
+                          onClick={() => onNavigate(item.path ?? '/lobby')}
+                        >
+                          <span>{item.label}</span>
+                          <span className="text-sm text-[#c8d8ff]">›</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
             </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="absolute -left-4 top-1/2 h-11 w-11 -translate-y-1/2 rounded-full border border-[#2a5dff] bg-gradient-to-b from-[#2358f6] to-[#1739b4] text-2xl text-white shadow-lg"
-              aria-label="Close search drawer"
-            >
-              ‹
-            </button>
           </motion.aside>
 
           <AnimatePresence>
@@ -348,17 +292,16 @@ export function SearchDrawer({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 36 }}
                 transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="fixed inset-0 z-[70] overflow-y-auto bg-[#0d1f86] px-5 pb-6 pt-10"
+                className="fixed inset-0 z-[70] overflow-y-auto bg-[#11298b] px-5 pb-6 pt-8"
                 onClick={(event) => event.stopPropagation()}
               >
-                <button
-                  type="button"
-                  className="mb-6 inline-flex items-center gap-2 text-base font-semibold text-white"
-                  onClick={closeSearchPage}
-                >
-                  <span className="text-xl">↩</span>
-                  <span>BACK</span>
-                </button>
+                <div className="mb-3 flex items-center justify-between border-b border-[#6d7fc6] pb-2">
+                  <Button variant="text" size="sm" onClick={closeSearchPage}>
+                    ↩ BACK
+                  </Button>
+                  <h2 className="text-lg font-extrabold tracking-[0.03em] text-white">SEARCH</h2>
+                  <span className="w-14" />
+                </div>
 
                 <div className="relative mb-4">
                   <input
@@ -374,7 +317,7 @@ export function SearchDrawer({
                       }
                     }}
                     placeholder="Search..."
-                    className="h-12 w-full rounded-full border border-[#899bde] bg-[#6472b5] px-4 pr-20 text-base text-white placeholder-[#d0d7ff]/80 outline-none"
+                    className="h-10 w-full rounded-md border border-[#6d7fc6] bg-[#132a7a] px-3 pr-20 text-sm text-white placeholder-[#b8c9ff] outline-none"
                   />
                   <div className="absolute inset-y-0 right-3 flex items-center gap-2">
                     {searchQuery.trim().length > 0 && (
@@ -384,7 +327,7 @@ export function SearchDrawer({
                           setSearchQuery('');
                           setSubmittedQuery('');
                         }}
-                        className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white"
+                        className="flex h-5 w-5 items-center justify-center rounded bg-[#5e72bf] text-xs text-white"
                         aria-label="Clear search"
                       >
                         ×
@@ -393,7 +336,7 @@ export function SearchDrawer({
                     <button
                       type="button"
                       onClick={executeSearch}
-                      className="text-2xl text-white/90"
+                      className="text-base text-[#c8d8ff]"
                       aria-label="Search"
                     >
                       ⌕
@@ -402,15 +345,15 @@ export function SearchDrawer({
                 </div>
 
                 {searchQuery.trim().length > 0 && submittedQuery.trim().length === 0 && (
-                  <div className="mb-5 max-h-64 overflow-y-auto rounded-md border border-[#bdc8ff] bg-white">
+                  <div className="mb-4 max-h-64 overflow-y-auto rounded-md border border-[#5e72bf] bg-[#0f226f]">
                     {liveMatches.length === 0 ? (
-                      <p className="px-4 py-3 text-sm text-[#2b2f45]">No matching games</p>
+                      <p className="px-4 py-3 text-sm text-[#b8c9ff]">No matching games</p>
                     ) : (
                       liveMatches.map((game) => (
                         <button
                           key={`live-${game['game-id']}`}
                           type="button"
-                          className="block w-full border-b border-[#d8ddfb] px-4 py-3 text-left text-[27px] font-semibold text-[#1b2248] last:border-b-0"
+                          className="block w-full border-b border-[#5e72bf] px-4 py-2 text-left text-sm font-semibold text-white last:border-b-0"
                           onClick={() => {
                             setSearchQuery(game.title);
                             setSubmittedQuery(game.title);
@@ -423,8 +366,8 @@ export function SearchDrawer({
                   </div>
                 )}
 
-                <div className="mb-4 border-t border-[#5c78d4] pt-3">
-                  <h3 className="text-[34px] font-bold leading-none text-white">RESULT ({submittedResults.length})</h3>
+                <div className="mb-3 border-t border-[#6d7fc6] pt-2">
+                  <h3 className="text-lg font-extrabold tracking-[0.03em] text-white">RESULT ({submittedResults.length})</h3>
                 </div>
 
                 {submittedQuery.trim().length === 0 ? (
@@ -432,42 +375,33 @@ export function SearchDrawer({
                 ) : submittedResults.length === 0 ? (
                   <div className="mb-10 min-h-[120px] py-6 text-center text-white/90">No Search Results Found...</div>
                 ) : (
-                  <div className="mb-10 space-y-3">
+                  <div className="mb-10 grid grid-cols-3 gap-2">
                     {submittedResults.map((game) => {
                       const imageUrl = getGameImageUrl(game);
                       return (
                         <button
                           key={`result-${game['game-id']}`}
                           type="button"
-                          className="block w-full overflow-hidden rounded-xl border border-[#6f88d6] bg-[#12235f] text-left"
+                          className="text-left"
                           onClick={() => {
                             onGameClick(game);
                             onClose();
                           }}
                         >
-                          <div className="aspect-[3/1] w-full bg-[#2b3562]">
-                            {imageUrl ? (
-                              <img src={imageUrl} alt={game.title} className="h-full w-full object-cover" loading="lazy" />
-                            ) : (
-                              <img
-                                src="/imgResource/unity-main-lobby/backgrounds-and-banners/IMG_Top_Banner_00.png"
-                                alt={game.title}
-                                className="h-full w-full object-cover opacity-90"
-                                loading="lazy"
-                              />
-                            )}
+                          <div className="aspect-[360/230] overflow-hidden rounded border border-[#5e72bf] bg-[#0f226f]">
+                            <img src={imageUrl} alt={game.title} className="h-full w-full object-cover" loading="lazy" />
                           </div>
-                          <div className="px-3 py-2 text-sm font-semibold text-white">{game.title}</div>
+                          <p className="mt-1 line-clamp-2 text-xs text-white">{game.title}</p>
                         </button>
                       );
                     })}
                   </div>
                 )}
 
-                <div className="mb-4 border-t border-[#5c78d4] pt-3">
+                <div className="mb-4 border-t border-[#6d7fc6] pt-2">
                   <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-[34px] font-bold leading-none text-white">MOST POPULAR</h3>
-                    <button type="button" className="rounded-full border border-[#4470df] px-4 py-1 text-sm font-semibold text-white">See all</button>
+                    <h3 className="text-lg font-extrabold tracking-[0.03em] text-white">MOST POPULAR</h3>
+                    <Button type="button" variant="ghost" size="sm">See all</Button>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {gameList.slice(0, 3).map((game) => (
@@ -480,17 +414,19 @@ export function SearchDrawer({
                           onClose();
                         }}
                       >
-                        <div className="aspect-[4/3] rounded bg-[#cfd4e6]" />
+                        <div className="aspect-[360/230] overflow-hidden rounded border border-[#5e72bf] bg-[#0f226f]">
+                          <img src={getGameImageUrl(game)} alt={game.title} className="h-full w-full object-cover" loading="lazy" />
+                        </div>
                         <p className="mt-1 line-clamp-2 text-xs text-white">{game.title}</p>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="mb-4 border-t border-[#5c78d4] pt-3">
+                <div className="mb-4 border-t border-[#6d7fc6] pt-2">
                   <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-[34px] font-bold leading-none text-white">RECOMMENDED</h3>
-                    <button type="button" className="rounded-full border border-[#4470df] px-4 py-1 text-sm font-semibold text-white">See all</button>
+                    <h3 className="text-lg font-extrabold tracking-[0.03em] text-white">RECOMMENDED</h3>
+                    <Button type="button" variant="ghost" size="sm">See all</Button>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {gameList.slice(3, 6).map((game) => (
@@ -503,7 +439,9 @@ export function SearchDrawer({
                           onClose();
                         }}
                       >
-                        <div className="aspect-[4/3] rounded bg-[#cfd4e6]" />
+                        <div className="aspect-[360/230] overflow-hidden rounded border border-[#5e72bf] bg-[#0f226f]">
+                          <img src={getGameImageUrl(game)} alt={game.title} className="h-full w-full object-cover" loading="lazy" />
+                        </div>
                         <p className="mt-1 line-clamp-2 text-xs text-white">{game.title}</p>
                       </button>
                     ))}
