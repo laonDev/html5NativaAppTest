@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ModalProvider } from './components/Modal/ModalProvider';
+import { UiStatusProvider } from './components/Feedback/UiStatusProvider';
 import { MainLayout } from './components/MainLayout';
 import { LoginPage } from './pages/LoginPage';
 import { LobbyPage } from './pages/LobbyPage';

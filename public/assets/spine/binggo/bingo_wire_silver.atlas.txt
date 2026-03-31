@@ -1,0 +1,10 @@
+bingo_wire_silver.png
+size:1024,128
+filter:Linear,Linear
+pma:true
+resource/img/IMG_Wire_Silve_01
+bounds:235,21,199,95
+resource/img/IMG_Wire_Silve_02
+bounds:436,2,126,114
+resource/img/IMG_Wire_Silve_03
+bounds:2,35,231,81

@@ -1,0 +1,16 @@
+bingo_machinefloor.png
+size:2048,2048
+filter:Linear,Linear
+pma:true
+machine/BTN_Auto_None
+bounds:754,679,212,159
+machine/BTN_Draw_None
+bounds:1371,1181,431,157
+machine/BTN_I_None
+bounds:1371,1048,151,131
+machine/machine_01
+bounds:2,2,750,836
+machine/machine_02
+bounds:2,840,1367,498
+machine/machine_03
+bounds:2,1340,2020,597

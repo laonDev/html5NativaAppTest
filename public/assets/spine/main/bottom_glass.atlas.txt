@@ -1,0 +1,7 @@
+bottom_glass.png
+size:488,361
+filter:Linear,Linear
+pma:true
+resource/img/bingo_3d/icon_bingo_glass
+bounds:2,2,484,357
+offsets:4,0,492,360

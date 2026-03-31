@@ -28,7 +28,6 @@ export function FilterModal({ onClose, onApply, currentFilters }: FilterModalPro
         <Button onClick={onClose} variant="text" size="sm">✕</Button>
       </div>
 
-      {/* Sort */}
       <div>
         <p className="mb-2 text-sm text-gray-400">Sort by</p>
         <div className="flex gap-2">
@@ -46,7 +45,6 @@ export function FilterModal({ onClose, onApply, currentFilters }: FilterModalPro
         </div>
       </div>
 
-      {/* Apply */}
       <Button
         onClick={() => { onApply(filters); onClose(); }}
         variant="primary"

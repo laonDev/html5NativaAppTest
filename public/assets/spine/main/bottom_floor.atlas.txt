@@ -1,0 +1,10 @@
+bottom_floor.png
+size:1490,398
+filter:Linear,Linear
+pma:true
+resource/img/bingo_3d/IMG_Bingo_Background
+bounds:2,2,1306,394
+offsets:0,0,1306,403
+resource/img/bingo_3d/bottom_ui_light1
+bounds:1310,64,178,332
+offsets:6,0,187,335

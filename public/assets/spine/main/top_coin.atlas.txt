@@ -1,0 +1,12 @@
+top_coin.png
+size:412,232
+filter:Linear,Linear
+pma:true
+temp_coineff
+bounds:2,2,395,130
+offsets:0,0,401,130
+top_coin
+bounds:2,134,106,96
+top_coinbg
+bounds:110,134,300,96
+offsets:95,10,401,119

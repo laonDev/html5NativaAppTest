@@ -36,6 +36,10 @@ const routes: MockRoute[] = [
     handler: () => ({ create_result: mockAuthInfo }),
   },
   {
+    match: (url) => url.includes('account/create_dev'),
+    handler: () => ({ create_result: mockAuthInfo }),
+  },
+  {
     match: (url) => url.includes('account/login'),
     handler: () => ({ login_result: mockLoginResult }),
   },

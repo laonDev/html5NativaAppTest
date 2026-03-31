@@ -4,11 +4,12 @@ interface SlotCardItemProps {
   game: Game;
   isFavorite: boolean;
   isHot?: boolean;
+  isEnd?: boolean;
   onClick: () => void;
   onToggleFavorite: (game: Game) => void;
 }
 
-export function SlotCardItem({ game, isFavorite, isHot = false, onClick, onToggleFavorite }: SlotCardItemProps) {
+export function SlotCardItem({ game, isFavorite, isHot = false, isEnd = false, onClick, onToggleFavorite }: SlotCardItemProps) {
   const imgSrc = game['game-Image']?.src;
   const imageUrl = imgSrc && imgSrc.ext.length > 0 ? `${imgSrc.name}.${imgSrc.ext[0]}` : '';
 
@@ -36,7 +37,7 @@ export function SlotCardItem({ game, isFavorite, isHot = false, onClick, onToggl
 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
 
-        {(isHot || game.new) && (
+        {(isHot || game.new || isEnd) && (
           <div className="absolute left-2 top-2 z-10 flex flex-col gap-1">
             {isHot && (
               <span
@@ -52,6 +53,14 @@ export function SlotCardItem({ game, isFavorite, isHot = false, onClick, onToggl
                 style={{ textShadow: '0 1px 0 rgba(0,0,0,0.25)' }}
               >
                 NEW
+              </span>
+            )}
+            {isEnd && (
+              <span
+                className="inline-flex items-center rounded-md border border-cyan-200/70 bg-gradient-to-b from-[#6ae4ff] to-[#2563eb] px-1.5 py-0.5 text-[10px] font-black tracking-wide text-white shadow-[0_2px_6px_rgba(37,99,235,0.45)]"
+                style={{ textShadow: '0 1px 0 rgba(0,0,0,0.25)' }}
+              >
+                END
               </span>
             )}
           </div>

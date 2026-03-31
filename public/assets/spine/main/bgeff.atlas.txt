@@ -1,0 +1,6 @@
+bgeff.png
+size:132,132
+filter:Linear,Linear
+pma:true
+IMG_Line_01
+bounds:2,2,128,128

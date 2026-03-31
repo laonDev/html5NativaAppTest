@@ -1,0 +1,10 @@
+bingo_wire_bronze.png
+size:1024,128
+filter:Linear,Linear
+pma:true
+resource/img/wire1
+bounds:2,35,231,81
+resource/img/wire2
+bounds:436,2,126,114
+resource/img/wire3
+bounds:235,21,199,95

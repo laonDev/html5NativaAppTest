@@ -1,0 +1,9 @@
+top_volt.png
+size:406,249
+filter:Linear,Linear
+pma:true
+icon_volt
+bounds:261,104,143,143
+offsets:2,2,147,147
+icon_volteff
+bounds:2,2,257,245

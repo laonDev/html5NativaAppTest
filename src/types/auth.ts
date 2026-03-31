@@ -35,6 +35,11 @@ export interface CreateUserParameter {
 }
 
 export interface ServerInfo {
+  status?: number;
+  message?: string;
+  version?: string;
+  multiServerUrl?: string;
+  suprStompUrl?: string;
   system?: {
     server_time?: string;
     config?: {
