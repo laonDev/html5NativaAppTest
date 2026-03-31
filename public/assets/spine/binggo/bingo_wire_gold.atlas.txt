@@ -1,0 +1,10 @@
+bingo_wire_gold.png
+size:1024,128
+filter:Linear,Linear
+pma:true
+resource/img/IMG_Wire_gold_01
+bounds:436,2,126,114
+resource/img/IMG_Wire_gold_02
+bounds:2,35,231,81
+resource/img/IMG_Wire_gold_03
+bounds:235,21,199,95

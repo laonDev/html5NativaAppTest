@@ -1,0 +1,142 @@
+icon_mission.png
+size:1024,1024
+filter:Linear,Linear
+pma:true
+img/bottom_ui/mission/mission_output/mission_icon 3_12
+bounds:2,665,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_13
+bounds:2,444,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_14
+bounds:244,665,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_16
+bounds:2,223,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_17
+bounds:244,444,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_18
+bounds:486,665,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_19
+bounds:2,2,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_20
+bounds:244,223,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_21
+bounds:486,444,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_22
+bounds:728,665,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_23
+bounds:244,2,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_24
+bounds:486,223,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_25
+bounds:728,444,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_26
+bounds:486,2,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_27
+bounds:728,223,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_28
+bounds:728,2,240,219
+
+icon_mission_2.png
+size:1024,1024
+filter:Linear,Linear
+pma:true
+img/bottom_ui/mission/mission_output/mission_icon 3_07
+bounds:707,2,228,219
+offsets:12,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_08
+bounds:717,444,231,219
+offsets:9,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_09
+bounds:482,444,233,219
+offsets:7,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_10
+bounds:243,444,237,219
+offsets:3,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_11
+bounds:2,223,238,219
+offsets:2,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_29
+bounds:2,665,239,219
+offsets:1,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_31
+bounds:2,444,239,219
+offsets:1,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_32
+bounds:243,665,239,219
+offsets:1,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_33
+bounds:484,665,236,219
+offsets:4,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_34
+bounds:2,2,235,219
+offsets:5,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_35
+bounds:242,223,234,219
+offsets:6,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_37
+bounds:722,665,233,219
+offsets:7,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_38
+bounds:239,2,233,219
+offsets:7,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_40
+bounds:478,223,232,219
+offsets:8,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_41
+bounds:474,2,231,219
+offsets:9,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_43
+bounds:712,223,229,219
+offsets:11,0,240,219
+
+icon_mission_3.png
+size:1024,1024
+filter:Linear,Linear
+pma:true
+img/bottom_ui/mission/mission_output/mission_icon 3_00
+bounds:459,223,224,219
+offsets:16,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_02
+bounds:688,444,224,219
+offsets:16,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_03
+bounds:457,2,224,219
+offsets:16,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_04
+bounds:461,444,225,219
+offsets:15,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_05
+bounds:461,665,226,219
+offsets:14,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_06
+bounds:232,665,227,219
+offsets:13,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_44
+bounds:2,665,228,219
+offsets:12,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_45
+bounds:2,444,228,219
+offsets:12,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_46
+bounds:2,223,227,219
+offsets:13,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_47
+bounds:232,444,227,219
+offsets:13,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_48
+bounds:2,2,226,219
+offsets:14,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_49
+bounds:231,223,226,219
+offsets:14,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_50
+bounds:689,665,225,219
+offsets:15,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_51
+bounds:230,2,225,219
+offsets:15,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_52
+bounds:685,223,224,219
+offsets:16,0,240,219
+img/bottom_ui/mission/mission_output/mission_icon 3_53
+bounds:683,2,224,219
+offsets:16,0,240,219

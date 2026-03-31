@@ -1,0 +1,65 @@
+{
+"skeleton": {
+	"hash": "kskXEEVtOz4",
+	"spine": "4.2.43",
+	"x": 256.69,
+	"y": -217.06,
+	"width": 212,
+	"height": 159,
+	"images": "./resource/img/",
+	"audio": "C:/Users/DG-2110-PC-010/Spine/backup"
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "bone", "parent": "root", "x": 370.03, "y": -111.01 }
+],
+"slots": [
+	{ "name": "machine_03", "bone": "root", "visible": false },
+	{ "name": "machine_02", "bone": "root", "visible": false },
+	{ "name": "machine_01", "bone": "root", "visible": false },
+	{ "name": "BTN_Auto_None", "bone": "bone", "attachment": "machine/BTN_Auto_None" },
+	{ "name": "BTN_Draw_None", "bone": "root", "visible": false },
+	{ "name": "BTN_I_None", "bone": "root", "visible": false }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"BTN_Auto_None": {
+				"machine/BTN_Auto_None": { "x": -7.34, "y": -26.55, "width": 212, "height": 159 }
+			},
+			"BTN_Draw_None": {
+				"machine/BTN_Draw_None": { "y": -137.56, "width": 431, "height": 157 }
+			},
+			"BTN_I_None": {
+				"machine/BTN_I_None": { "x": -330.55, "y": -137.56, "width": 151, "height": 131 }
+			},
+			"machine_01": {
+				"machine/machine_01": { "y": 352.38, "width": 750, "height": 836 }
+			},
+			"machine_02": {
+				"machine/machine_02": { "width": 1367, "height": 498 }
+			},
+			"machine_03": {
+				"machine/machine_03": { "width": 2020, "height": 597 }
+			}
+		}
+	}
+],
+"events": {
+	"bdchange": {}
+},
+"animations": {
+	"in": {
+		"bones": {
+			"bone": {
+				"translate": [
+					{ "y": -333.03 },
+					{ "time": 0.3333 }
+				]
+			}
+		}
+	},
+	"loop": {}
+}
+}

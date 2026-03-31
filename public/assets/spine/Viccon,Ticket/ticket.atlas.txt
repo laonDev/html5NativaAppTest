@@ -1,0 +1,12 @@
+ticket.png
+size:1402,1057
+filter:Linear,Linear
+pma:true
+BTN_Info
+bounds:1305,919,136,95
+rotate:90
+IMG_Back_01
+bounds:669,81,634,974
+IMG_Back_02
+bounds:2,2,665,1053
+offsets:0,0,665,1054

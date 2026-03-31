@@ -1,0 +1,16 @@
+vicconbgeff_light.png
+size:940,585
+filter:Linear,Linear
+pma:true
+IMG_Viccon_Background_01_1
+bounds:2,2,245,670
+offsets:1,0,246,670
+rotate:90
+light2_tex
+bounds:2,249,166,866
+offsets:17,23,200,912
+rotate:90
+light_tex
+bounds:2,417,166,936
+offsets:13,3,192,980
+rotate:90

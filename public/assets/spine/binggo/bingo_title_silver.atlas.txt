@@ -1,0 +1,17 @@
+bingo_title_silver.png
+size:512,128
+filter:Linear,Linear
+pma:true
+resource/img/title/lightning_icon_add_02
+bounds:274,18,76,86
+offsets:11,3,97,95
+rotate:90
+resource/img/title/silver_distort
+bounds:2,64,270,30
+offsets:0,1,275,33
+resource/img/title/silver_distort_color
+bounds:2,32,270,30
+offsets:0,1,275,33
+resource/img/title/title_silver_blind
+bounds:2,2,260,28
+offsets:8,2,275,33

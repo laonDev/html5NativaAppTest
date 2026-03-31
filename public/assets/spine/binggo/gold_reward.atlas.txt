@@ -1,0 +1,10 @@
+gold_reward.png
+size:512,512
+filter:Linear,Linear
+pma:true
+resource/img/reward/gold_reward_1
+bounds:2,140,261,260
+offsets:7,6,268,278
+resource/img/reward/gold_reward_2
+bounds:2,2,109,136
+offsets:12,14,146,168

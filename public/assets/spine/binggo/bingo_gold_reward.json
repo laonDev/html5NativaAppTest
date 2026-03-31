@@ -1,0 +1,203 @@
+{
+"skeleton": {
+	"hash": "eW6jA19zijE",
+	"spine": "4.2.43",
+	"x": -120,
+	"y": -92,
+	"width": 240,
+	"height": 185,
+	"images": "./resource/img/reward_gold/",
+	"audio": "./audio"
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "bone", "parent": "root" }
+],
+"slots": [
+	{ "name": "on", "bone": "bone", "attachment": "bingo_reward_gold_00" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"on": {
+				"bingo_reward_gold_00": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_01": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_02": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_03": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_04": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_05": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_06": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_07": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_08": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_09": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_10": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_11": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_12": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_13": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_14": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_15": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_16": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_17": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_18": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_19": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_20": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_21": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_22": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_23": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_24": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_25": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_26": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_27": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_28": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_29": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_30": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_31": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_32": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_33": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_34": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_35": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_36": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_37": { "y": 0.5, "width": 240, "height": 185 },
+				"bingo_reward_gold_38": { "y": 0.5, "width": 240, "height": 185 }
+			}
+		}
+	}
+],
+"animations": {
+	"idle": {
+		"slots": {
+			"on": {
+				"attachment": [
+					{ "name": "bingo_reward_gold_00" },
+					{ "time": 0.0517, "name": "bingo_reward_gold_01" },
+					{ "time": 0.1034, "name": "bingo_reward_gold_02" },
+					{ "time": 0.1551, "name": "bingo_reward_gold_03" },
+					{ "time": 0.2068, "name": "bingo_reward_gold_04" },
+					{ "time": 0.2585, "name": "bingo_reward_gold_05" },
+					{ "time": 0.3102, "name": "bingo_reward_gold_06" },
+					{ "time": 0.3619, "name": "bingo_reward_gold_07" },
+					{ "time": 0.4136, "name": "bingo_reward_gold_08" },
+					{ "time": 0.4653, "name": "bingo_reward_gold_09" },
+					{ "time": 0.517, "name": "bingo_reward_gold_10" },
+					{ "time": 0.5687, "name": "bingo_reward_gold_11" },
+					{ "time": 0.6204, "name": "bingo_reward_gold_12" },
+					{ "time": 0.6721, "name": "bingo_reward_gold_13" },
+					{ "time": 0.7238, "name": "bingo_reward_gold_14" },
+					{ "time": 0.7755, "name": "bingo_reward_gold_15" },
+					{ "time": 0.8272, "name": "bingo_reward_gold_16" },
+					{ "time": 0.8789, "name": "bingo_reward_gold_17" },
+					{ "time": 0.9306, "name": "bingo_reward_gold_18" },
+					{ "time": 0.9823, "name": "bingo_reward_gold_19" },
+					{ "time": 1.034, "name": "bingo_reward_gold_20" },
+					{ "time": 1.0857, "name": "bingo_reward_gold_21" },
+					{ "time": 1.1374, "name": "bingo_reward_gold_22" },
+					{ "time": 1.1891, "name": "bingo_reward_gold_23" },
+					{ "time": 1.2408, "name": "bingo_reward_gold_24" },
+					{ "time": 1.2925, "name": "bingo_reward_gold_25" },
+					{ "time": 1.3442, "name": "bingo_reward_gold_26" },
+					{ "time": 1.3959, "name": "bingo_reward_gold_27" },
+					{ "time": 1.4476, "name": "bingo_reward_gold_28" },
+					{ "time": 1.4993, "name": "bingo_reward_gold_29" },
+					{ "time": 1.551, "name": "bingo_reward_gold_30" },
+					{ "time": 1.6029, "name": "bingo_reward_gold_31" },
+					{ "time": 1.6544, "name": "bingo_reward_gold_32" },
+					{ "time": 1.7061, "name": "bingo_reward_gold_33" },
+					{ "time": 1.7578, "name": "bingo_reward_gold_34" },
+					{ "time": 1.8095, "name": "bingo_reward_gold_35" },
+					{ "time": 1.8612, "name": "bingo_reward_gold_36" },
+					{ "time": 1.9129, "name": "bingo_reward_gold_37" },
+					{ "time": 1.9645, "name": "bingo_reward_gold_38" }
+				]
+			}
+		}
+	},
+	"in_idle": {
+		"slots": {
+			"on": {
+				"attachment": [
+					{ "name": "bingo_reward_gold_00" },
+					{ "time": 0.0517, "name": "bingo_reward_gold_01" },
+					{ "time": 0.1034, "name": "bingo_reward_gold_02" },
+					{ "time": 0.1551, "name": "bingo_reward_gold_03" },
+					{ "time": 0.2068, "name": "bingo_reward_gold_04" },
+					{ "time": 0.2585, "name": "bingo_reward_gold_05" },
+					{ "time": 0.3102, "name": "bingo_reward_gold_06" },
+					{ "time": 0.3619, "name": "bingo_reward_gold_07" },
+					{ "time": 0.4136, "name": "bingo_reward_gold_08" },
+					{ "time": 0.4653, "name": "bingo_reward_gold_09" },
+					{ "time": 0.517, "name": "bingo_reward_gold_10" },
+					{ "time": 0.5687, "name": "bingo_reward_gold_11" },
+					{ "time": 0.6204, "name": "bingo_reward_gold_12" },
+					{ "time": 0.6721, "name": "bingo_reward_gold_13" },
+					{ "time": 0.7238, "name": "bingo_reward_gold_14" },
+					{ "time": 0.7755, "name": "bingo_reward_gold_15" },
+					{ "time": 0.8272, "name": "bingo_reward_gold_16" },
+					{ "time": 0.8789, "name": "bingo_reward_gold_17" },
+					{ "time": 0.9306, "name": "bingo_reward_gold_18" },
+					{ "time": 0.9823, "name": "bingo_reward_gold_19" },
+					{ "time": 1.034, "name": "bingo_reward_gold_20" },
+					{ "time": 1.0857, "name": "bingo_reward_gold_21" },
+					{ "time": 1.1374, "name": "bingo_reward_gold_22" },
+					{ "time": 1.1891, "name": "bingo_reward_gold_23" },
+					{ "time": 1.2408, "name": "bingo_reward_gold_24" },
+					{ "time": 1.2925, "name": "bingo_reward_gold_25" },
+					{ "time": 1.3442, "name": "bingo_reward_gold_26" },
+					{ "time": 1.3959, "name": "bingo_reward_gold_27" },
+					{ "time": 1.4476, "name": "bingo_reward_gold_28" },
+					{ "time": 1.4993, "name": "bingo_reward_gold_29" },
+					{ "time": 1.551, "name": "bingo_reward_gold_30" },
+					{ "time": 1.6029, "name": "bingo_reward_gold_31" },
+					{ "time": 1.6544, "name": "bingo_reward_gold_32" },
+					{ "time": 1.7061, "name": "bingo_reward_gold_33" },
+					{ "time": 1.7578, "name": "bingo_reward_gold_34" },
+					{ "time": 1.8095, "name": "bingo_reward_gold_35" },
+					{ "time": 1.8612, "name": "bingo_reward_gold_36" },
+					{ "time": 1.9129, "name": "bingo_reward_gold_37" },
+					{ "time": 1.9645, "name": "bingo_reward_gold_38" }
+				]
+			}
+		},
+		"bones": {
+			"bone": {
+				"translate": [
+					{ "y": -234.41 },
+					{ "time": 0.3333 }
+				]
+			}
+		}
+	},
+	"in_off": {
+		"slots": {
+			"on": {
+				"rgba": [
+					{ "color": "5d5d5dff" }
+				],
+				"attachment": [
+					{ "name": "bingo_reward_gold_00" }
+				]
+			}
+		},
+		"bones": {
+			"bone": {
+				"translate": [
+					{ "y": -234.41 },
+					{ "time": 0.3333 }
+				]
+			}
+		}
+	},
+	"off": {
+		"slots": {
+			"on": {
+				"rgba": [
+					{ "color": "5d5d5dff" }
+				],
+				"attachment": [
+					{ "name": "bingo_reward_gold_00" }
+				]
+			}
+		}
+	}
+}
+}
