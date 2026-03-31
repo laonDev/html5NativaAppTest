@@ -5,6 +5,7 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
+  --ui-section-gap: 10px;
 }
 
 * {
@@ -36,4 +37,8 @@ body {
 
 [data-scrollbar='hidden']::-webkit-scrollbar {
   display: none;
+}
+
+.ui-section-stack > * + * {
+  margin-top: var(--ui-section-gap);
 }

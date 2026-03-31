@@ -73,7 +73,7 @@ export function AccountPage() {
         {/* Balance Info */}
         <div className="mb-4 rounded-xl bg-[#16213e] p-4">
           <h3 className="mb-3 text-sm font-medium text-gray-400">Balance</h3>
-          <div className="space-y-2">
+          <div className="ui-section-stack">
             <div className="flex justify-between">
               <span className="text-sm text-gray-300">Cash + Bonus</span>
               <span className="font-bold text-yellow-400">{formatBalance(balance)}</span>
@@ -86,7 +86,7 @@ export function AccountPage() {
         </div>
 
         {/* Menu Items */}
-        <div className="space-y-2">
+        <div className="ui-section-stack">
           <ListItem
             onClick={() => navigate('/history')}
             title="Earned History"

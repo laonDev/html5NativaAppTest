@@ -232,7 +232,7 @@ export function CrashGamePage() {
       </div>
 
       {/* Bet Controls */}
-      <div className="space-y-2 bg-[#16213e] p-3" style={{ paddingBottom: 'calc(12px + var(--safe-bottom))' }}>
+      <div className="ui-section-stack bg-[#16213e] p-3" style={{ paddingBottom: 'calc(12px + var(--safe-bottom))' }}>
         <div className="grid grid-cols-2 gap-2">
           {BET_SLOTS.slice(0, 2).map((idx) => (
             <div key={idx} className="rounded-lg bg-[#1a1a2e] p-2">
