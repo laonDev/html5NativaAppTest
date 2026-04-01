@@ -71,7 +71,7 @@ export function TicketPage() {
       {ticketList.length === 0 ? (
         <div className="py-12 text-center text-gray-500">No tickets available</div>
       ) : (
-        <div className="space-y-3">
+        <div className="ui-section-stack">
           {ticketList.map((ticket) => (
             <div key={ticket.ticketIdx} className="flex items-center gap-3 rounded-xl bg-[#16213e] p-4">
               <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#0f3460]">

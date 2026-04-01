@@ -128,7 +128,7 @@ export function TournamentPage() {
 
               {/* Leaderboard */}
               <h3 className="mb-2 text-sm font-medium text-gray-400">Leaderboard</h3>
-              <ScrollView className="max-h-80 space-y-2 rounded-lg pr-1">
+              <ScrollView className="ui-section-stack max-h-80 rounded-lg pr-1">
                 {rankings.slice(0, 100).map((rank, idx) => (
                   <motion.div
                     key={rank.userId}
@@ -153,7 +153,7 @@ export function TournamentPage() {
 
               {/* Prize table */}
               <h3 className="mb-2 mt-6 text-sm font-medium text-gray-400">Prizes</h3>
-              <div className="space-y-1">
+              <div className="ui-section-stack">
                 {tournament.lstBenefitData.map((b) => (
                   <div key={b.benefitId} className="flex items-center justify-between rounded-lg bg-[#16213e] p-3 text-sm">
                     <span className="text-gray-300">
@@ -176,7 +176,7 @@ export function TournamentPage() {
           {history.length === 0 ? (
             <div className="py-12 text-center text-gray-500">No previous tournaments</div>
           ) : (
-            <ScrollView className="max-h-[60vh] space-y-4 pr-1">
+            <ScrollView className="ui-section-stack max-h-[60vh] pr-1">
               {history.map((h) => (
                 <div key={h.seq} className="rounded-xl bg-[#16213e] p-4">
                   <p className="mb-1 text-sm font-bold">Tournament #{h.tournamentData.tournamentId}</p>

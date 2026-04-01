@@ -85,7 +85,7 @@ export function VoltPage() {
             <p className="mb-3 text-center text-xs text-gray-400">x{volt.count}</p>
 
             {volt.count > 0 && (
-              <div className="space-y-1">
+              <div className="ui-section-stack">
                 <Button
                   onClick={() => handleOpen(volt.voltType)}
                   disabled={opening !== null}
@@ -136,7 +136,7 @@ export function VoltPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="mb-4 text-lg font-bold">Rewards!</h3>
-              <div className="space-y-2">
+              <div className="ui-section-stack">
                 {rewards.map((r, i) => (
                   <div key={i} className="rounded-lg bg-[#1a1a2e] p-3">
                     {r.vicconReward > 0 && (

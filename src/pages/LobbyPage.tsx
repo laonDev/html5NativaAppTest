@@ -1,8 +1,11 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
+import type { CSSProperties } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CategoryBar } from '@/components/CategoryBar/CategoryBar';
 import { FloatingActionGroup } from '@/components/FloatingActionGroup/FloatingActionGroup';
 import { LobbySectionRow } from '@/components/LobbySectionRow/LobbySectionRow';
+import { LobbyCurrencyPanel } from '@/components/LobbyCurrencyPanel/LobbyCurrencyPanel';
+import { LobbyTournamentPanel } from '@/components/LobbyTournamentPanel/LobbyTournamentPanel';
 import { SlotCardItem } from '@/components/SlotCardItem/SlotCardItem';
 import { BannerCarousel, type BannerItem } from '@/components/BannerCarousel/BannerCarousel';
 import { SearchDrawer } from '@/components/Modal/SearchDrawer';
@@ -38,6 +41,7 @@ const JACKPOTS = ['MINI', 'MAJOR', 'MEGA'] as const;
 const VOLATILITY = ['LOW', 'MEDIUM', 'HIGH'] as const;
 const HOME_BANNER_MAX_HEIGHT = 148;
 const HOME_SECTION_ITEM_LIMIT = 24;
+const SLOT_CARD_WIDTH_STYLE = 'clamp(148px, calc((100vw - 44px) / 2.25), 186px)';
 
 function inferProvider(game: Game): string {
   const raw = [
@@ -448,19 +452,27 @@ export function LobbyPage() {
           setHomeScrollTop(target.scrollTop);
         }}
       >
+        {!isHome && <div className="h-[10px]" />}
+
         {!isHome && (
           <BannerCarousel
             key={`banner-${activeCategory}-${activeSubCategory || 'root'}`}
             items={banners}
-            className="shrink-0 pt-1"
+            className="shrink-0"
             itemAspectClass="aspect-[358/102]"
           />
         )}
 
+        {!isHome && <div className="h-[10px]" />}
+
         {lobbySections.length === 0 ? (
           <div className="flex h-40 items-center justify-center text-gray-500">No games found</div>
         ) : activeCategory === 'home' ? (
-          <div className="py-4">
+          <div className="pb-4">
+            <div className="h-[10px]" />
+            <div className="ui-section-stack">
+            <LobbyCurrencyPanel />
+            <LobbyTournamentPanel />
             {lobbySections.map((section) => (
               <LobbySectionRow
                 key={section.key}
@@ -473,13 +485,21 @@ export function LobbyPage() {
                 rows={2}
               />
             ))}
+            </div>
           </div>
         ) : (
-          <div className="space-y-5 px-4 py-4">
+          <div className="ui-section-stack px-4 pb-4">
             {activeCategory === 'slot' && recentPlayedGames.length > 0 && (
               <section>
                 <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.04em] text-gray-200">| RECENTLY PLAYED</h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div
+                  className="grid gap-2"
+                  style={{
+                    '--slot-card-width': SLOT_CARD_WIDTH_STYLE,
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(var(--slot-card-width), var(--slot-card-width)))',
+                    justifyContent: 'center',
+                  } as CSSProperties}
+                >
                   {recentPlayedGames.map((game) => (
                     <SlotCardItem
                       key={`recent-${game['game-id']}`}
@@ -499,7 +519,14 @@ export function LobbyPage() {
             )}
             {lobbySections.map((section) => (
               <section key={section.key}>
-                <div className="grid grid-cols-2 gap-2">
+                <div
+                  className="grid gap-2"
+                  style={{
+                    '--slot-card-width': SLOT_CARD_WIDTH_STYLE,
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(var(--slot-card-width), var(--slot-card-width)))',
+                    justifyContent: 'center',
+                  } as CSSProperties}
+                >
                   {section.items.map((game) => (
                     <SlotCardItem
                       key={game['game-id']}

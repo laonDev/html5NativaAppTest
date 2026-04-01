@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { ScrollView } from '@/components/ui/ScrollView';
 import { SlotCardItem } from '@/components/SlotCardItem/SlotCardItem';
 import type { Game } from '@/types';
@@ -37,10 +38,14 @@ export function LobbySectionRow({
           {title}
         </h3>
       </div>
-      <ScrollView direction="horizontal" className="px-4">
+      <ScrollView
+        direction="horizontal"
+        className="px-4"
+        style={{ '--slot-card-width': 'clamp(148px, calc((100vw - 44px) / 2.25), 186px)' } as CSSProperties}
+      >
         <div className="flex gap-3 pb-1">
           {columns.map((column, columnIndex) => (
-            <div key={`${title}-${columnIndex}`} className="w-36 shrink-0 space-y-3">
+            <div key={`${title}-${columnIndex}`} className="w-[var(--slot-card-width)] shrink-0 space-y-3">
               {column.map((game) => (
                 <SlotCardItem
                   key={game['game-id']}
@@ -51,7 +56,7 @@ export function LobbySectionRow({
                   onToggleFavorite={onToggleFavorite}
                 />
               ))}
-              {rows === 2 && column.length === 1 && <div className="h-[220px] rounded-xl bg-transparent" />}
+              {rows === 2 && column.length === 1 && <div className="aspect-[360/230] w-full rounded-xl bg-transparent" />}
             </div>
           ))}
         </div>
