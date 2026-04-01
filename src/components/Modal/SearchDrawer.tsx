@@ -27,6 +27,12 @@ interface GroupItem {
   children?: GroupItem[];
 }
 
+interface QuickAction {
+  key: 'deposit' | 'promo' | 'earned';
+  label: string;
+  onClick: () => void;
+}
+
 const GROUPS: Array<{ key: string; title: string; items: GroupItem[] }> = [
   {
     key: 'games',
@@ -209,6 +215,24 @@ export function SearchDrawer({
     setSubmittedQuery('');
   };
 
+  const quickActions: QuickAction[] = [
+    {
+      key: 'deposit',
+      label: 'DEPOSIT',
+      onClick: () => onNavigate('/account'),
+    },
+    {
+      key: 'promo',
+      label: 'PROMO',
+      onClick: () => onSelectLobbyCategory('promo', 'all'),
+    },
+    {
+      key: 'earned',
+      label: 'EARNED',
+      onClick: () => onNavigate('/history'),
+    },
+  ];
+
   return (
     <AnimatePresence>
       {open && (
@@ -246,14 +270,15 @@ export function SearchDrawer({
             </div>
 
             <div className="mb-4 grid grid-cols-3 gap-2">
-              {['DEPOSIT', 'PROMO', 'EARNED'].map((quick) => (
+              {quickActions.map((quick) => (
                 <Button
-                  key={quick}
+                  key={quick.key}
                   size="sm"
                   variant="ghost"
                   className="h-10 text-xs"
+                  onClick={quick.onClick}
                 >
-                  {quick}
+                  {quick.label}
                 </Button>
               ))}
             </div>
