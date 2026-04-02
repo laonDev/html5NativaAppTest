@@ -56,4 +56,6 @@ export interface SpinResultMessage {
   beforeCash: number;
   beforeBonus: number;
   voltType: number;
+  /** 스핀 결과로 클리어된 미션 정보 (서버에서 포함할 때만 존재) */
+  missionUpdate?: { missionIndex: number; status: number };
 }

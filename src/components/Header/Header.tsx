@@ -2,7 +2,11 @@ import { useNavigate } from 'react-router-dom';
 import { useBalanceStore, formatBalance } from '@/stores/balanceStore';
 import { useVoltStore } from '@/stores/voltStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useMissionStore } from '@/stores/missionStore';
+import { MISSION_STATUS } from '@/types/dailyMission';
 import { formatBadgeCount } from '@/utils/format';
+
+const IS_DEV = import.meta.env.DEV;
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 function CoinIcon() {
@@ -30,6 +34,9 @@ export function Header() {
   const totalVolt = useVoltStore((s) => s.totalCount);
   const userInfo = useAuthStore((s) => s.userInfo);
 
+  const updateMission = useMissionStore((s) => s.updateMission);
+  const missions = useMissionStore((s) => s.missions);
+
   const isVoltMax = totalVolt >= 99;
 
   return (
@@ -46,8 +53,21 @@ export function Header() {
         </span>
       </button>
 
-      {/* Right — BTN_Thunder_Icon + BTN_Profile */}
+      {/* Right — [MOCK TEST] + BTN_Thunder_Icon + BTN_Profile */}
       <div className="flex items-center gap-3">
+
+        {/* Mock 전용 미션 클리어 테스트 버튼 */}
+        {IS_DEV && (
+          <button
+            className="rounded bg-yellow-500/20 px-2 py-1 text-[10px] font-bold text-yellow-300 ring-1 ring-yellow-400/30 active:opacity-70"
+            onClick={() => {
+              const target = missions.find((m) => m.status === MISSION_STATUS.IN_PROGRESS);
+              if (target) updateMission(target.missionIndex, MISSION_STATUS.ACHIEVED);
+            }}
+          >
+            MOCK
+          </button>
+        )}
 
         {/* BTN_Thunder_Icon */}
         <button
