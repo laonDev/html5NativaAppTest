@@ -251,8 +251,12 @@ export function CrashGamePageV2() {
           tick += 1
           setTick(tick)
 
-          const multi = Math.pow(1.0024, tick)
-          setMultiplier(Math.round(multi * 100) / 100)
+          let speed = 1.005
+
+          if (multiplier > 2) speed = 1.01
+          if (multiplier > 5) speed = 1.02
+
+          setMultiplier(prev => prev * speed)
 
           if (tick >= crashTick) {
             if (playTimer) {

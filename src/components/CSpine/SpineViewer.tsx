@@ -105,7 +105,7 @@ export default function SpineViewer({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const appRef = useRef<Application | null>(null)
   const controllerRef = useRef<SpineController | null>(null)
-
+  
   const applyAutoLayout = (
     controller: SpineController,
     app: Application,
@@ -136,10 +136,8 @@ export default function SpineViewer({
       const centerX = app.screen.width / 2
       const centerY = app.screen.height / 2
 
-      const offsetX =
-        (bounds.x + bounds.width / 2) * finalScale
-      const offsetY =
-        (bounds.y + bounds.height / 2) * finalScale
+      const offsetX = (bounds.x + bounds.width / 2) * finalScale
+      const offsetY = (bounds.y + bounds.height / 2) * finalScale
 
       controller.setPosition(centerX - offsetX, centerY - offsetY)
     } else {
@@ -171,14 +169,52 @@ export default function SpineViewer({
       appRef.current = app
       containerRef.current.appendChild(app.canvas)
 
-      const spineData = await Assets.load(spinePath)
+      app.canvas.style.width = '100%'
+app.canvas.style.height = '100%'
+app.canvas.style.display = 'block'
+
+      const jsonPath = spinePath
+      const atlasPath = spinePath.replace(/\.json$/i, '.atlas')
+
+      const jsonAlias = `${jsonPath}-json`
+      const atlasAlias = `${jsonPath}-atlas`
+
+      try {
+        Assets.add({ alias: jsonAlias, src: jsonPath })
+        Assets.add({ alias: atlasAlias, src: atlasPath })
+
+        if (debug) {
+          console.log('[SpineViewer] jsonPath:', jsonPath)
+          console.log('[SpineViewer] atlasPath:', atlasPath)
+        }
+
+        await Assets.load([jsonAlias, atlasAlias])
+
+        if (debug) {
+          console.log('[SpineViewer] assets loaded')
+        }
+      } catch (err) {
+        console.error('[SpineViewer] load failed:', err)
+        return
+      }
 
       if (!mounted) {
         app.destroy(true)
         return
       }
 
-      const spine = Spine.from(spineData)
+      let spine: Spine
+
+      try {
+        spine = Spine.from({
+          skeleton: jsonAlias,
+          atlas: atlasAlias,
+        })
+      } catch (err) {
+        console.error('[SpineViewer] Spine.from failed:', err)
+        return
+      }
+
       app.stage.addChild(spine)
 
       const controller = new SpineController(spine)
@@ -219,7 +255,7 @@ export default function SpineViewer({
         containerRef.current.innerHTML = ''
       }
     }
-  }, [spinePath])
+  }, [spinePath, width, height, backgroundAlpha, debug])
 
   useEffect(() => {
     const controller = controllerRef.current
@@ -243,7 +279,7 @@ export default function SpineViewer({
     if (!controller || !app) return
 
     applyAutoLayout(controller, app)
-  }, [x, y, scale, width, height, autoCenter, autoFit, fitRatio])
+  }, [x, y, scale, autoCenter, autoFit, fitRatio])
 
   return <div ref={containerRef} className={className} />
 }
