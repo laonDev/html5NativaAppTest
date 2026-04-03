@@ -13,7 +13,7 @@ import { HistoryPage } from './pages/HistoryPage';
 import { VicconPage } from './pages/VicconPage';
 import { TicketPage } from './pages/TicketPage';
 import { VoltPage } from './pages/VoltPage';
-import { CrashGamePage } from './pages/CrashGamePage';
+import { CrashGamePageV2 } from './pages/feature/crash/CrashGamePageV2';
 import { SpineToolPage } from './pages/SpineToolPage';
 
 export default function App() {
@@ -22,7 +22,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/slot" element={<SlotPage />} />
-        <Route path="/crash" element={<CrashGamePage />} />
+        <Route path="/crash" element={<CrashGamePageV2 />} />
         <Route path="/spine-tool" element={<SpineToolPage />} />
         <Route element={<MainLayout />}>
           <Route path="/lobby" element={<LobbyPage />} />
