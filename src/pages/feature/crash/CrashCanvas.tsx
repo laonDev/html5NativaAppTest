@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { CRASH_STATE } from '@/types'
 import { getMultiplierColor } from '@/utils/format'
 import type { CrashCanvasProps } from './types'
+import SpineViewer from '@/components/CSpine/SpineViewer'
 
 export function CrashCanvas({
   gameState,
@@ -10,6 +11,25 @@ export function CrashCanvas({
 }: CrashCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animFrameRef = useRef<number>(0)
+
+  const getSpaceshipAnimation = () => {
+    if (gameState === CRASH_STATE.END) {
+      return 'spaceship_boom'
+    }
+
+    if (
+      gameState === CRASH_STATE.PLAY ||
+      gameState === CRASH_STATE.PLAYING
+    ) {
+      if (multiplier >= 2) {
+        return 'spaceship_step_02'
+      }
+
+      return 'spaceship_step_01'
+    }
+
+    return 'spaceship_standby'
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -23,8 +43,8 @@ export function CrashCanvas({
       const h = canvas.height
 
       ctx.clearRect(0, 0, w, h)
-      ctx.fillStyle = '#1a1a2e'
-      ctx.fillRect(0, 0, w, h)
+      // ctx.fillStyle = '#1a1a2e'
+      // ctx.fillRect(0, 0, w, h)
 
       ctx.strokeStyle = '#ffffff10'
       ctx.lineWidth = 1
@@ -117,8 +137,51 @@ export function CrashCanvas({
   }, [gameState, multiplier, countdown])
 
   return (
-    <div className="relative flex-1">
-      <canvas ref={canvasRef} className="absolute inset-0" />
+    <div className="relative flex-1 overflow-hidden bg-[#1a1a2e]">
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <SpineViewer
+          spinePath="/assets/spine/crashgame/crashgame_bg_loop.json"
+          animation="Crashgame_bg"
+          loop
+          className="w-full h-full"
+          width={375}
+          height={250}
+          autoCenter={false}
+          autoFit={false}
+          scale={0.11}
+          x={180}
+          y={200}
+          backgroundAlpha={0}
+        />
+
+        <SpineViewer
+          spinePath="/assets/spine/crashgame/icon_spaceship.json"
+          animation={getSpaceshipAnimation()}
+          loop={gameState !== CRASH_STATE.END}
+          className="absolute inset-0 pointer-events-none"
+          width={375}
+          height={250}
+          autoCenter={false}
+          autoFit={false}
+          x={180}
+          y={175}
+          scale={0.15}
+          backgroundAlpha={0}
+        />
+      </div>
+
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 z-10"
+      />
+
+      <div className={`
+        absolute top-10 left-1/2 -translate-x-1/2
+        text-3xl font-bold pointer-events-none
+        ${gameState === CRASH_STATE.END ? 'text-red-500' : 'text-green-400'}
+      `}>
+        {multiplier.toFixed(2)}x
+      </div>
     </div>
   )
 }
