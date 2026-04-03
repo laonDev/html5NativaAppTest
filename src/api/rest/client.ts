@@ -34,7 +34,7 @@ const addRefreshSubscriber = (callback: (token: string) => void) => {
 // ------------------------------------------------------------------------
 
 //  핵심 스위치: .env에 명시적으로 false라고 적지 않는 이상 무조건 우회(Mock) 작동
-const ENABLE_MOCK_API = (import.meta as any).env.VITE_ENABLE_MOCK_API !== 'false';
+const ENABLE_MOCK_API = (import.meta as any).env.VITE_ENABLE_MOCK_API === 'true';
 
 // [요청 인터셉터]
 client.interceptors.request.use((config: any) => {
