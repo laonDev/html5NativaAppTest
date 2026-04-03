@@ -13,6 +13,8 @@ interface MissionState {
   setMissions: (missions: DailyMissionInfo[], endDate: string, status: number) => void;
   updateMission: (index: number, status: number) => void;
   clearClearNotice: () => void;
+  /** DEV 전용 — 모든 미션을 COLLECTED 상태로 만들어 COLLECT 버튼 테스트 */
+  devSetAllCollected: () => void;
 }
 
 export const useMissionStore = create<MissionState>((set, get) => ({
@@ -44,4 +46,9 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   },
 
   clearClearNotice: () => set({ pendingClearNotice: null }),
+
+  devSetAllCollected: () => {
+    const missions = get().missions.map((m) => ({ ...m, status: MISSION_STATUS.COLLECTED, minValue: m.maxValue }));
+    set({ missions, hasCompletable: false, overallStatus: 1 });
+  },
 }));

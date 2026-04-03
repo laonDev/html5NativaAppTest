@@ -85,18 +85,6 @@ export function DailyMissionPage() {
     }
   };
 
-  const handleCollectAll = async () => {
-    setCollecting(-1);
-    try {
-      await missionApi.collectAll();
-      await loadMissions();
-    } catch (err) {
-      console.error('Collect all error:', err);
-    } finally {
-      setCollecting(null);
-    }
-  };
-
   const handleComplete = async () => {
     setCollecting(-2);
     try {
@@ -110,7 +98,6 @@ export function DailyMissionPage() {
   };
 
   const collectedCount = missions.filter((m) => m.status === MISSION_STATUS.COLLECTED).length;
-  const hasCollectable = missions.some((m) => m.status === MISSION_STATUS.ACHIEVED);
   const allCollected = collectedCount === missions.length && missions.length > 0;
 
   if (loading) {
@@ -203,14 +190,46 @@ export function DailyMissionPage() {
           If you have completed all missions, you can earn<br />Volt rewards for free!
         </p>
 
-        {/* Countdown timer */}
-        <div className="mt-3 flex items-center justify-center gap-1.5 rounded-full bg-black/30 py-1.5 px-4 mx-auto w-fit ring-1 ring-white/10">
-          <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 text-[#00c8ff]" fill="currentColor">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" />
-          </svg>
-          <span className="font-mono text-xs font-bold tracking-wider text-white">
-            {String(hours + days * 24).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-          </span>
+        {/* Countdown / COLLECT / ALL DONE */}
+        <div className="mt-3">
+          {overallStatus === 3 ? (
+            /* ── ALL DONE! ── */
+            <div className="flex items-center justify-center gap-2 rounded-full bg-white/5 py-2 px-6 mx-auto w-fit ring-1 ring-white/15">
+              <svg viewBox="0 0 16 16" className="h-4 w-4 text-green-400" fill="currentColor">
+                <path d="M13.485 3.515a.75.75 0 010 1.06l-7 7a.75.75 0 01-1.06 0l-3.5-3.5a.75.75 0 011.06-1.06L6 9.94l6.47-6.47a.75.75 0 011.06 0z" />
+              </svg>
+              <span className="text-sm font-black tracking-widest text-green-400">ALL DONE!</span>
+            </div>
+          ) : allCollected ? (
+            /* ── COLLECT 버튼 (올 클리어 볼트 보상 수령) ── */
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={handleComplete}
+              disabled={collecting === -2}
+              className="mx-auto flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-400 py-2.5 font-black tracking-widest text-white shadow-lg shadow-green-900/50 disabled:opacity-50"
+            >
+              {collecting === -2 ? (
+                <span className="text-sm">Collecting…</span>
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                    <path d="M13 2L4.5 13.5H11L9 22l10.5-12H14L13 2z" />
+                  </svg>
+                  <span className="text-sm">COLLECT</span>
+                </>
+              )}
+            </motion.button>
+          ) : (
+            /* ── 카운트다운 타이머 ── */
+            <div className="flex items-center justify-center gap-1.5 rounded-full bg-black/30 py-1.5 px-4 mx-auto w-fit ring-1 ring-white/10">
+              <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 text-[#00c8ff]" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" />
+              </svg>
+              <span className="font-mono text-xs font-bold tracking-wider text-white">
+                {String(hours + days * 24).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Coins decoration */}
@@ -234,28 +253,7 @@ export function DailyMissionPage() {
           ))}
         </AnimatePresence>
 
-        {/* Action buttons */}
-        {hasCollectable && (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={handleCollectAll}
-            disabled={collecting !== null}
-            className="w-full rounded-xl bg-gradient-to-r from-[#00c8ff] to-[#0088ff] py-3.5 text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-blue-900/40 disabled:opacity-50"
-          >
-            {collecting === -1 ? 'Collecting…' : 'Collect All'}
-          </motion.button>
-        )}
 
-        {allCollected && overallStatus !== 3 && (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={handleComplete}
-            disabled={collecting !== null}
-            className="w-full rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 py-3.5 text-sm font-bold uppercase tracking-widest text-black shadow-lg shadow-yellow-900/40 disabled:opacity-50"
-          >
-            {collecting === -2 ? 'Completing…' : 'Complete All Missions!'}
-          </motion.button>
-        )}
       </div>
     </div>
   );
