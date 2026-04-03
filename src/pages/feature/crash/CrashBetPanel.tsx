@@ -19,7 +19,7 @@ export function CrashBetPanel({
       style={{ paddingBottom: 'calc(12px + var(--safe-bottom))' }}
     >
       <div className="grid grid-cols-2 gap-2">
-        {BET_SLOTS.slice(0, 2).map((idx) => {
+        {BET_SLOTS.map((idx) => {
           const slot = betSlots[idx]
 
           return (
@@ -48,8 +48,8 @@ export function CrashBetPanel({
                 disabled={!canBet || slot.active}
                 className="mb-2 w-full rounded bg-[#223056] py-1.5 text-xs text-white disabled:opacity-40"
               >
-                Auto Cashout
-                {slot.autoMulti > 0 ? ` (${slot.autoMulti.toFixed(2)}x)` : ''}
+                {slot.autoMulti > 0
+                  ? `Auto Cashout ${slot.autoMulti.toFixed(2)}x` : 'Set Auto Cashout'}
               </button>
 
               {!slot.active ? (

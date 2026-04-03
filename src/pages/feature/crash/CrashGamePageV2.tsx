@@ -10,6 +10,7 @@ import { CrashCanvas } from './CrashCanvas'
 import { CrashBetPanel } from './CrashBetPanel'
 import { CrashRankList } from './CrashRankList'
 import { CrashAutoCashoutPopup } from './CrashAutoCashoutPopup'
+import type { BetRank } from '@/types'
 import type { CrashBetSlotState } from './types'
 import { createInitialBetSlots } from './types'
 
@@ -19,16 +20,18 @@ export function CrashGamePageV2() {
   const gameState = useCrashStore((s) => s.gameState)
   const multiplier = useCrashStore((s) => s.multiplier)
   const betRanks = useCrashStore((s) => s.betRanks)
+  const cash = useBalanceStore((s) => s.cash)
+  const bonus = useBalanceStore((s) => s.bonus)
+  const balance = useBalanceStore((s) => s.balance)
+  const setBalance = useBalanceStore((s) => s.setBalance)
   // const setRoundInfo = useCrashStore((s) => s.setRoundInfo)
   const setGameState = useCrashStore((s) => s.setGameState)
   const setTick = useCrashStore((s) => s.setTick)
   const setMultiplier = useCrashStore((s) => s.setMultiplier)
-  // const setBetRanks = useCrashStore((s) => s.setBetRanks)
+  const setBetRanks = useCrashStore((s) => s.setBetRanks)
   // const setCashOutRanks = useCrashStore((s) => s.setCashOutRanks)
   // const clearBets = useCrashStore((s) => s.clearBets)
   const [countdown, setCountdown] = useState(0)
-
-  const balance = useBalanceStore((s) => s.balance)
 
   const [betSlots, setBetSlots] = useState<CrashBetSlotState[]>(
     createInitialBetSlots(),
@@ -46,10 +49,6 @@ export function CrashGamePageV2() {
   
   const [autoPopupOpen, setAutoPopupOpen] = useState(false)
   const [selectedBetIndex, setSelectedBetIndex] = useState(0)
-  
-  useEffect(() => {
-    console.log('🔥 CrashGamePageV2 mounted')
-  }, [])
 
   /*
    * =========================================================
@@ -136,6 +135,36 @@ export function CrashGamePageV2() {
    * -> END (2s)
    * -> 반복
    */
+
+  const createMockRanks = (): BetRank[] => {
+  return Array.from({ length: 10 }).map((_, i) => {
+    const betMoney = Math.floor(Math.random() * 5000 + 1000) * 1000
+    const isCashOut = Math.random() > 0.4
+
+    const outMulti = isCashOut
+      ? Math.floor((Math.random() * 3 + 1) * 100)
+      : 0
+
+    const outMoney = isCashOut
+      ? Math.floor((betMoney / 1000) * (outMulti / 100) * 1000)
+      : 0
+
+    return {
+      betIndex: i,
+      nickname: `User_${i + 1}`,
+      profileUrl: '',
+      betMoney,
+      outMulti,
+      outMoney,
+    }
+  })
+}
+
+  useEffect(() => {
+    const mock = createMockRanks()
+    setBetRanks(mock)
+  }, [])
+
   useEffect(() => {
     const WAITING_TIME = 7000
     const START_TIME = 3000
@@ -282,14 +311,36 @@ export function CrashGamePageV2() {
 
   const handleBet = async (betIndex: number) => {
     const slot = betSlots[betIndex]
-    if (!slot) return
-
+    if (!slot) {
+      return
+    } 
     const amount = slot.betAmount
-    if (amount <= 0) return
+
+    if (amount <= 0) {
+      return
+    }
+       
+    if (balance < amount) {
+      return
+    }
+    if (slot.active) {
+      return
+    }
+
+      
+
+    const { cash, bonus } = useBalanceStore.getState()
+    if (cash < amount) return
+
 
     try {
       // 실서버 연동 시 사용
-      // await crashApi.bet(betIndex, amount, autoMultis[betIndex])
+      // await crashApi.bet(betIndex, amount, slot.autoMulti)
+      
+      setBalance({ 
+        cash: cash - amount,
+        bonus,
+       })
 
       updateBetSlot(betIndex, (currentSlot) => ({
         ...currentSlot,
@@ -305,30 +356,55 @@ export function CrashGamePageV2() {
     }
   }
 
-  const handleCashOut = async (betIndex: number) => {
-    try {
-      // 실서버 연동 시 사용
-      // await crashApi.cashOut(betIndex)
+const handleCashOut = async (betIndex: number) => {
+  const slot = betSlots[betIndex];
+  if (!slot) return
+  if (!slot.active || slot.cashedOut) return
+  try {
+    // 실서버 연동 시 사용
+    // await crashApi.cashOut(betIndex)
+    const cashOutMulti = multiplier
+    const outMoney = Math.floor(slot.betAmount * cashOutMulti)
+    const profit = outMoney - slot.betAmount
 
-      updateBetSlot(betIndex, (slot) => {
-        const cashOutMulti = multiplier
-        const outMoney = Math.floor(slot.betAmount * cashOutMulti)
-        const profit = outMoney - slot.betAmount
+    const { cash, bonus } = useBalanceStore.getState()
 
-        return {
-          ...slot,
-          active: false,
-          cashedOut: true,
-          cashOutMulti,
-          outMoney,
-          profit,
-          resultStatus: 'cashout',
-        }
-      })  
-    } catch (err) {
-      console.error('Cash out error:', err)
-    }
+    setBalance({
+      cash: cash + outMoney,
+      bonus,
+    })
+
+    updateBetSlot(betIndex, (slot) => {
+      return {
+        ...slot,
+        active: false,
+        cashedOut: true,
+        cashOutMulti,
+        outMoney,
+        profit,
+        resultStatus: 'cashout',
+      }
+    })  
+  } catch (err) {
+    console.error('Cash out error:', err)
   }
+}
+
+useEffect(() => {
+  if (gameState !== CRASH_STATE.PLAY &&
+      gameState !== CRASH_STATE.PLAYING
+  ) return
+
+  betSlots.forEach((slot) => {
+    if (!slot.active) return
+    if (slot.cashedOut) return
+    if (slot.autoMulti <= 0) return
+
+    if (multiplier >= slot.autoMulti) {
+      handleCashOut(slot.betIndex)
+    }
+  })
+}, [multiplier, gameState, betSlots])
 
 const handleOpenAutoCashoutPopup = (betIndex: number) => {
   setSelectedBetIndex(betIndex)
@@ -347,6 +423,10 @@ const handleApplyAutoCashout = (betIndex: number, autoMulti: number) => {
 
   const canCashOut =
     gameState === CRASH_STATE.PLAY || gameState === CRASH_STATE.PLAYING
+
+  const resultSlots = betSlots.filter(
+    (slot) => slot.resultStatus === 'cashout' || slot.resultStatus === 'lose',
+  ).sort((a, b) => a.betIndex - b.betIndex)
 
   return (
     <div className="flex h-full flex-col bg-[#1a1a2e]">
@@ -379,6 +459,85 @@ const handleApplyAutoCashout = (betIndex: number, autoMulti: number) => {
           onCashOut={handleCashOut}
           onOpenAutoCashoutPopup={handleOpenAutoCashoutPopup}
         />
+
+      {gameState === CRASH_STATE.END && resultSlots.length > 0 && (
+        <div className="mb-3 rounded-xl bg-[#1a1a2e] p-3">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <div className="text-sm font-bold text-white">Round Result</div>
+              <div className="mt-1 text-xs text-gray-400">
+                Crash Multiplier
+              </div>
+            </div>
+
+            <div className="rounded-lg bg-[#16213e] px-3 py-2 text-sm font-bold text-red-400">
+              {multiplier.toFixed(2)}x
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {resultSlots.map((slot) => {
+              const isCashout = slot.resultStatus === 'cashout'
+              const profitText =
+                slot.profit >= 0
+                  ? `+${formatBalance(slot.profit).replace('£', '')}`
+                  : `-${formatBalance(Math.abs(slot.profit)).replace('£', '')}`
+
+              return (
+                <div
+                  key={slot.betIndex}
+                  className="rounded-lg border border-white/5 bg-[#16213e] px-3 py-3"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="text-sm font-semibold text-white">
+                      Bet {slot.betIndex + 1}
+                    </div>
+
+                    <div
+                      className={`rounded px-2 py-1 text-[11px] font-bold ${
+                        isCashout
+                          ? 'bg-green-500/15 text-green-400'
+                          : 'bg-red-500/15 text-red-400'
+                      }`}
+                    >
+                      {isCashout
+                        ? `CASH OUT ${slot.cashOutMulti.toFixed(2)}x`
+                        : 'LOSE'}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="rounded bg-[#1a1a2e] px-2 py-2">
+                      <div className="mb-1 text-gray-400">Bet</div>
+                      <div className="font-medium text-gray-200">
+                        {formatBalance(slot.betAmount)}
+                      </div>
+                    </div>
+
+                    <div className="rounded bg-[#1a1a2e] px-2 py-2">
+                      <div className="mb-1 text-gray-400">Cash Out</div>
+                      <div className="font-medium text-gray-200">
+                        {slot.outMoney > 0 ? formatBalance(slot.outMoney) : '-'}
+                      </div>
+                    </div>
+
+                    <div className="rounded bg-[#1a1a2e] px-2 py-2">
+                      <div className="mb-1 text-gray-400">Profit</div>
+                      <div
+                        className={`font-bold ${
+                          slot.profit >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}
+                      >
+                        {profitText}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
         <CrashRankList betRanks={betRanks} />
       </div>
