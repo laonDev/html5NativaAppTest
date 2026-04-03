@@ -1,0 +1,7 @@
+vicconbgeff_smoke.png
+size:1013,499
+filter:Linear,Linear
+pma:true
+smoke
+bounds:2,2,1009,495
+offsets:0,0,1047,516

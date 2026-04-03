@@ -5,8 +5,13 @@ import { socketManager } from '@/api/socket/socketManager';
 import { useBalanceStore } from '@/stores/balanceStore';
 import { useVoltStore } from '@/stores/voltStore';
 import { useTicketStore } from '@/stores/ticketStore';
+import { useMissionStore } from '@/stores/missionStore';
+import { MISSION_STATUS } from '@/types/dailyMission';
 import type { SpinResultMessage } from '@/types';
 import { Button } from '@/components/ui/Button';
+import { MissionClearToast } from '@/components/MissionClearToast/MissionClearToast';
+
+const IS_DEV = import.meta.env.DEV;
 
 export function SlotPage() {
   const navigate = useNavigate();
@@ -20,6 +25,8 @@ export function SlotPage() {
   const updateFromSpin = useBalanceStore((s) => s.updateFromSpin);
   const addVolt = useVoltStore((s) => s.addVolt);
   const updateGauge = useTicketStore((s) => s.updateGauge);
+  const updateMission = useMissionStore((s) => s.updateMission);
+  const missions = useMissionStore((s) => s.missions);
 
   useEffect(() => {
     const enterSlot = async () => {
@@ -37,6 +44,10 @@ export function SlotPage() {
           updateFromSpin(data.cash, data.bonus);
           if (data.voltType > 0) {
             addVolt(data.voltType, 1);
+          }
+          // 서버가 미션 클리어 정보를 함께 보낼 경우 처리
+          if (data.missionUpdate) {
+            updateMission(data.missionUpdate.missionIndex, data.missionUpdate.status);
           }
         });
       } catch (err) {
@@ -61,11 +72,25 @@ export function SlotPage() {
           ← Back
         </Button>
         <h2 className="text-sm font-medium">{title}</h2>
-        <div className="w-12" />
+        {/* Mock 모드 전용 — 미션 클리어 토스트 테스트 버튼 */}
+        {IS_DEV ? (
+          <button
+            className="rounded bg-yellow-500/20 px-2 py-1 text-[10px] font-bold text-yellow-300 ring-1 ring-yellow-400/30 active:opacity-70"
+            onClick={() => {
+              const target = missions.find((m) => m.status === MISSION_STATUS.IN_PROGRESS);
+              if (target) updateMission(target.missionIndex, MISSION_STATUS.ACHIEVED);
+            }}
+          >
+            TEST
+          </button>
+        ) : (
+          <div className="w-12" />
+        )}
       </div>
 
-      {/* Slot iframe */}
-      <div className="flex-1">
+      {/* Slot iframe + 미션 클리어 토스트 (인게임 — 탭해도 이동 없음) */}
+      <div className="relative flex-1">
+        <MissionClearToast />
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#e94560] border-t-transparent" />

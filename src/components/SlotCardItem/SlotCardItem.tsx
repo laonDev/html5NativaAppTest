@@ -9,9 +9,17 @@ interface SlotCardItemProps {
   onToggleFavorite: (game: Game) => void;
 }
 
+const MOCK_THUMBNAILS = [
+  '/mock-cdn/slots/BTN_Thumbnail_00.png',
+  '/mock-cdn/slots/BTN_Thumbnail_01.png',
+  '/mock-cdn/slots/BTN_Thumbnail_02.png',
+  '/mock-cdn/slots/BTN_Thumbnail_03.png',
+  '/mock-cdn/slots/BTN_Thumbnail_04.png',
+  '/mock-cdn/slots/BTN_Thumbnail_05.png',
+];
+
 export function SlotCardItem({ game, isFavorite, isHot = false, isEnd = false, onClick, onToggleFavorite }: SlotCardItemProps) {
-  const imgSrc = game['game-Image']?.src;
-  const imageUrl = imgSrc && imgSrc.ext.length > 0 ? `${imgSrc.name}.${imgSrc.ext[0]}` : '';
+  const imageUrl = MOCK_THUMBNAILS[(game['game-id'] * 7) % MOCK_THUMBNAILS.length];
 
   return (
     <button
@@ -21,19 +29,13 @@ export function SlotCardItem({ game, isFavorite, isHot = false, isEnd = false, o
     >
       <div className="pointer-events-none absolute inset-[1px] rounded-[11px] border border-white/10" />
 
-      <div className="relative aspect-[4/5] w-full bg-[#0f3460]">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={game.title}
-            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
-            No image
-          </div>
-        )}
+      <div className="relative aspect-[360/230] w-full bg-[#0f3460]">
+        <img
+          src={imageUrl}
+          alt={game.title}
+          className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+          loading="lazy"
+        />
 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
 
@@ -77,11 +79,6 @@ export function SlotCardItem({ game, isFavorite, isHot = false, isEnd = false, o
         >
           {isFavorite ? '★' : '☆'}
         </button>
-      </div>
-
-      <div className="relative border-t border-white/10 bg-gradient-to-b from-[#111b38] to-[#0a1124] px-2 py-2">
-        <p className="truncate text-sm font-semibold text-white">{game.title}</p>
-        <p className="truncate text-[11px] uppercase tracking-[0.02em] text-[#90a0c7]">{game.slug}</p>
       </div>
     </button>
   );

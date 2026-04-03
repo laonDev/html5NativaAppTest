@@ -1,13 +1,15 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
+import type { CSSProperties } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CategoryBar } from '@/components/CategoryBar/CategoryBar';
 import { FloatingActionGroup } from '@/components/FloatingActionGroup/FloatingActionGroup';
 import { LobbySectionRow } from '@/components/LobbySectionRow/LobbySectionRow';
+import { LobbyCurrencyPanel } from '@/components/LobbyCurrencyPanel/LobbyCurrencyPanel';
+import { LobbyTournamentPanel } from '@/components/LobbyTournamentPanel/LobbyTournamentPanel';
 import { SlotCardItem } from '@/components/SlotCardItem/SlotCardItem';
 import { BannerCarousel, type BannerItem } from '@/components/BannerCarousel/BannerCarousel';
-import { SearchModal } from '@/components/Modal/SearchModal';
+import { SearchDrawer } from '@/components/Modal/SearchDrawer';
 import { FilterDrawer } from '@/components/Modal/FilterDrawer';
-import { useModal } from '@/components/Modal/ModalProvider';
 import { useUiStatus } from '@/components/Feedback/UiStatusProvider';
 import { ScrollView } from '@/components/ui/ScrollView';
 import { useGameStore } from '@/stores/gameStore';
@@ -38,6 +40,8 @@ const PROVIDERS = ['DUG', 'PRAGMATIC', 'SUPRNATION', 'CASINO888'] as const;
 const JACKPOTS = ['MINI', 'MAJOR', 'MEGA'] as const;
 const VOLATILITY = ['LOW', 'MEDIUM', 'HIGH'] as const;
 const HOME_BANNER_MAX_HEIGHT = 148;
+const HOME_SECTION_ITEM_LIMIT = 24;
+const SLOT_CARD_WIDTH_STYLE = 'clamp(148px, calc((100vw - 44px) / 2.25), 186px)';
 
 function inferProvider(game: Game): string {
   const raw = [
@@ -72,15 +76,49 @@ function matchesFeature(game: Game, feature: string): boolean {
   return true;
 }
 
+function matchesSubCategory(activeCategory: string, activeSubCategory: string, game: Game, favorites: number[]): boolean {
+  if (!activeSubCategory) return true;
+
+  switch (activeCategory) {
+    case 'hot':
+      if (activeSubCategory === 'new') return game.new;
+      if (activeSubCategory === 'picks') return favorites.includes(game['game-id']);
+      if (activeSubCategory === 'jackpot') return inferJackpot(game) !== 'MINI';
+      return true;
+    case 'slot':
+      if (activeSubCategory === 'new') return game.new;
+      if (activeSubCategory === 'jackpot') return inferJackpot(game) !== 'MINI';
+      if (activeSubCategory === 'megaways') return game['game-id'] % 4 === 0;
+      return true;
+    case 'live': {
+      const group = game['game-id'] % 5;
+      if (activeSubCategory === 'roulette') return group === 1;
+      if (activeSubCategory === 'blackjack') return group === 2;
+      if (activeSubCategory === 'baccarat') return group === 3;
+      if (activeSubCategory === 'others') return group === 4;
+      return true;
+    }
+    case 'promo':
+      if (activeSubCategory === 'new') return game.new;
+      if (activeSubCategory === 'games') return !game.new;
+      if (activeSubCategory === 'the end') return game['game-id'] % 2 === 0;
+      return true;
+    default:
+      return true;
+  }
+}
+
 export function LobbyPage() {
   const navigate = useNavigate();
-  const { openModal, closeModal } = useModal();
   const [searchParams, setSearchParams] = useSearchParams();
   const { withLoading, showToast } = useUiStatus();
   const [activeCategory, setActiveCategory] = useState('home');
   const [activeSubCategory, setActiveSubCategory] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [homeScrollTop, setHomeScrollTop] = useState(0);
+  const [listScrollTop, setListScrollTop] = useState(0);
+  const listScrollRef = useRef<HTMLDivElement | null>(null);
   const filters = useMemo(() => parseFiltersFromSearch(searchParams), [searchParams]);
 
   const games = useGameStore((s) => s.games);
@@ -91,6 +129,14 @@ export function LobbyPage() {
   const hotGameIdSet = useMemo(() => {
     const hotCategory = categories.find((category) => category.slug === 'hot');
     return new Set(hotCategory?.['game-ids'] ?? []);
+  }, [categories]);
+  const categoryGameIdSets = useMemo(() => {
+    const findIds = (slug: string) => new Set(categories.find((category) => category.slug === slug)?.['game-ids'] ?? []);
+    return {
+      hot: findIds('hot'),
+      slot: findIds('slot'),
+      live: findIds('live'),
+    };
   }, [categories]);
 
   const secondaryCategories = useMemo(() => SECONDARY_CATEGORY_MAP[activeCategory] ?? [], [activeCategory]);
@@ -152,9 +198,7 @@ export function LobbyPage() {
       gameList = gameList.filter((g) => g.new).concat(gameList.filter((g) => !g.new));
     }
 
-    if (activeSubCategory === 'new') {
-      gameList = gameList.filter((game) => game.new);
-    }
+    gameList = gameList.filter((game) => matchesSubCategory(activeCategory, activeSubCategory, game, favorites));
 
     return gameList;
   }, [games, categories, activeCategory, activeSubCategory, favorites, filters]);
@@ -188,61 +232,86 @@ export function LobbyPage() {
   }, [favorites, addFavorite, removeFavorite, showToast, withLoading]);
 
   const lobbySections = useMemo<LobbySection[]>(() => {
-    const sections: LobbySection[] = [];
-    const category = categories.find((c) => c.slug === activeCategory);
-    const categoryTitle = category?.name ?? activeCategory.toUpperCase();
-    const newGames = filteredGames.filter((game) => game.new);
-    const favoriteRow = filteredGames.filter((game) => favorites.includes(game['game-id']));
-
-    if (activeCategory === 'home') {
-      const featured = filteredGames.slice(0, 36);
-      const latest = [...newGames, ...filteredGames.filter((game) => !game.new)].slice(0, 36);
-      const curated = filteredGames.slice(36, 72);
-
-      if (featured.length > 0) {
-        sections.push({ key: 'home-main', title: 'Featured Slots', items: featured });
-      }
-      if (latest.length > 0) {
-        sections.push({ key: 'home-new', title: 'New Games', items: latest });
-      }
-      if (curated.length > 0) {
-        sections.push({ key: 'home-more', title: 'More Games', items: curated });
-      }
-      if (favoriteRow.length > 0) {
-        sections.push({ key: 'home-favorite', title: 'My Picks', items: favoriteRow.slice(0, 36) });
-      }
-
-      return sections;
+    if (activeCategory !== 'home') {
+      if (filteredGames.length === 0) return [];
+      const fallbackTitle = activeSubCategory ? activeSubCategory.toUpperCase() : 'TOP';
+      return [
+        {
+          key: `${activeCategory}-single`,
+          title: `| ${fallbackTitle}`,
+          items: filteredGames,
+        },
+      ];
     }
 
-    if (filteredGames.length > 0) {
-      sections.push({
-        key: `${activeCategory}-main`,
-        title: `${categoryTitle} Games`,
-        items: filteredGames.slice(0, 18),
-      });
-    }
-    if (newGames.length > 0) {
-      sections.push({
-        key: `${activeCategory}-new`,
-        title: `New in ${categoryTitle}`,
-        items: newGames.slice(0, 24),
-      });
-    }
+    if (filteredGames.length === 0) return [];
 
-    return sections;
-  }, [activeCategory, categories, favorites, filteredGames]);
+    const all = filteredGames;
+    const getSlice = (start: number, size: number) => all.slice(start, start + size);
+    const withFallback = (items: Game[], fallbackStart: number) => {
+      if (items.length > 0) return items.slice(0, HOME_SECTION_ITEM_LIMIT);
+      return getSlice(fallbackStart, HOME_SECTION_ITEM_LIMIT);
+    };
+
+    const featured = withFallback(all.filter((game) => categoryGameIdSets.hot.has(game['game-id'])), 0);
+    const topSlots = withFallback(all.filter((game) => categoryGameIdSets.slot.has(game['game-id'])), 4);
+    const topExclusiveSlots = withFallback(
+      all.filter((game) => game['is-duelz-enabled'] || game['game-id'] % 5 === 0),
+      8,
+    );
+    const topLive = withFallback(all.filter((game) => categoryGameIdSets.live.has(game['game-id'])), 12);
+    const trendingSlots = withFallback(
+      [
+        ...all.filter((game) => hotGameIdSet.has(game['game-id']) || game.new),
+        ...all.filter((game) => !(hotGameIdSet.has(game['game-id']) || game.new)),
+      ],
+      16,
+    );
+    const jackpot = withFallback(all.filter((game) => inferJackpot(game) !== 'MINI'), 20);
+    const megaways = withFallback(all.filter((game) => game['game-id'] % 4 === 0), 24);
+
+    return [
+      { key: 'home-featured', title: '| FEATURED GAME', items: featured },
+      { key: 'home-top-slot', title: '| TOP SLOT GAMES', items: topSlots },
+      { key: 'home-top-exclusive', title: '| TOP EXCLUSIVE SLOTS', items: topExclusiveSlots },
+      { key: 'home-top-live', title: '| TOP LIVE GAMES', items: topLive },
+      { key: 'home-trending', title: '| TRENDING SLOTS', items: trendingSlots },
+      { key: 'home-jackpot', title: '| JACKPOT', items: jackpot },
+      { key: 'home-megaways', title: '| MEGAWAYS', items: megaways },
+    ];
+  }, [activeCategory, activeSubCategory, categoryGameIdSets, filteredGames, hotGameIdSet]);
+
+  const recentPlayedGames = useMemo(() => {
+    if (activeCategory !== 'slot') return [];
+    const favoredInCurrent = filteredGames.filter((game) => favorites.includes(game['game-id']));
+    if (favoredInCurrent.length >= 2) return favoredInCurrent.slice(0, 2);
+    const needed = 2 - favoredInCurrent.length;
+    const fallback = filteredGames.filter((game) => !favorites.includes(game['game-id'])).slice(0, needed);
+    return [...favoredInCurrent, ...fallback];
+  }, [activeCategory, favorites, filteredGames]);
 
   const openSearch = () => {
-    openModal(
-      <SearchModal onClose={closeModal} onGameClick={handleGameClick} />,
-      'search',
-    );
+    setSearchOpen(true);
   };
 
   const openFilter = () => {
     setFilterOpen(true);
   };
+
+  const scrollToTop = useCallback(() => {
+    if (listScrollRef.current) {
+      listScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    setHomeScrollTop(0);
+    setListScrollTop(0);
+  }, []);
+
+  const resetListScroll = useCallback(() => {
+    setHomeScrollTop(0);
+    if (listScrollRef.current) {
+      listScrollRef.current.scrollTop = 0;
+    }
+  }, []);
 
   const activeFilterChips = useMemo(() => {
     const chips: Array<{ group: keyof FilterState | 'sortBy'; value: string }> = [];
@@ -259,8 +328,9 @@ export function LobbyPage() {
   const applyFilters = useCallback((nextFilters: FilterState) => {
     const next = buildSearchParamsFromFilters(nextFilters);
     setSearchParams(next);
+    resetListScroll();
     showToast('Filter applied', 'success');
-  }, [setSearchParams, showToast]);
+  }, [resetListScroll, setSearchParams, showToast]);
 
   const clearFilterChip = useCallback((group: keyof FilterState | 'sortBy', value: string) => {
     const nextFilters: FilterState = {
@@ -279,11 +349,13 @@ export function LobbyPage() {
 
     const next = buildSearchParamsFromFilters(nextFilters);
     setSearchParams(next);
+    resetListScroll();
     showToast('Filter updated', 'info');
-  }, [filters, setSearchParams, showToast]);
+  }, [filters, resetListScroll, setSearchParams, showToast]);
 
   const isHome = activeCategory === 'home';
   const isPromoEndCategory = activeCategory === 'promo' && activeSubCategory === 'the end';
+  const showScrollTopAction = listScrollTop > 24;
   const clampedHomeScroll = Math.max(0, Math.min(homeScrollTop, HOME_BANNER_MAX_HEIGHT));
   const homeBannerHeight = Math.max(HOME_BANNER_MAX_HEIGHT - clampedHomeScroll, 0);
   const showHomeBanner = clampedHomeScroll < HOME_BANNER_MAX_HEIGHT;
@@ -292,11 +364,21 @@ export function LobbyPage() {
     setActiveCategory(slug);
     const nextSubCategories = SECONDARY_CATEGORY_MAP[slug] ?? [];
     setActiveSubCategory(nextSubCategories[0] ?? '');
-  }, []);
+    resetListScroll();
+  }, [resetListScroll]);
 
   const handleSubCategoryChange = useCallback((slug: string) => {
     setActiveSubCategory(slug);
-  }, []);
+    resetListScroll();
+  }, [resetListScroll]);
+
+  const handleSearchSelectCategory = useCallback((category: 'home' | 'hot' | 'slot' | 'live' | 'promo' | 'mypick', subCategory?: string) => {
+    setActiveCategory(category);
+    const nextSubCategories = SECONDARY_CATEGORY_MAP[category] ?? [];
+    setActiveSubCategory(subCategory ?? nextSubCategories[0] ?? '');
+    setSearchOpen(false);
+    resetListScroll();
+  }, [resetListScroll]);
 
   return (
     <div className="flex h-full flex-col">
@@ -306,7 +388,7 @@ export function LobbyPage() {
           style={{ height: `${homeBannerHeight}px`, visibility: showHomeBanner ? 'visible' : 'hidden' }}
         >
           <div style={{ transform: `translateY(-${clampedHomeScroll}px)` }}>
-            <BannerCarousel items={banners} className="shrink-0" />
+            <BannerCarousel key="banner-home" items={banners} className="shrink-0" />
           </div>
         </div>
       )}
@@ -342,6 +424,7 @@ export function LobbyPage() {
 
       <FloatingActionGroup
         items={[
+          ...(showScrollTopAction ? [{ key: 'to-top', label: 'Top', icon: '↑', onClick: scrollToTop }] : []),
           { key: 'search', label: 'Search', icon: '🔍', onClick: openSearch },
           {
             key: 'filter',
@@ -358,27 +441,38 @@ export function LobbyPage() {
         ]}
       />
 
-      {/* Home: horizontal sections(2 rows), Others: vertical list */}
+      {/* Home: horizontal sections(2 rows), Others: single vertical section */}
       <ScrollView
+        ref={listScrollRef}
         className="flex-1"
         onScroll={(event) => {
-          if (!isHome) return;
           const target = event.currentTarget as HTMLDivElement;
+          setListScrollTop(target.scrollTop);
+          if (!isHome) return;
           setHomeScrollTop(target.scrollTop);
         }}
       >
+        {!isHome && <div className="h-[10px]" />}
+
         {!isHome && (
           <BannerCarousel
+            key={`banner-${activeCategory}-${activeSubCategory || 'root'}`}
             items={banners}
-            className="shrink-0 pt-1"
+            className="shrink-0"
             itemAspectClass="aspect-[358/102]"
           />
         )}
 
+        {!isHome && <div className="h-[10px]" />}
+
         {lobbySections.length === 0 ? (
           <div className="flex h-40 items-center justify-center text-gray-500">No games found</div>
         ) : activeCategory === 'home' ? (
-          <div className="py-4">
+          <div className="pb-4">
+            <div className="h-[10px]" />
+            <div className="ui-section-stack">
+            <LobbyCurrencyPanel />
+            <LobbyTournamentPanel />
             {lobbySections.map((section) => (
               <LobbySectionRow
                 key={section.key}
@@ -391,13 +485,48 @@ export function LobbyPage() {
                 rows={2}
               />
             ))}
+            </div>
           </div>
         ) : (
-          <div className="space-y-5 px-4 py-4">
+          <div className="ui-section-stack px-4 pb-4">
+            {activeCategory === 'slot' && recentPlayedGames.length > 0 && (
+              <section>
+                <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.04em] text-gray-200">| RECENTLY PLAYED</h3>
+                <div
+                  className="grid gap-2"
+                  style={{
+                    '--slot-card-width': SLOT_CARD_WIDTH_STYLE,
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(var(--slot-card-width), var(--slot-card-width)))',
+                    justifyContent: 'center',
+                  } as CSSProperties}
+                >
+                  {recentPlayedGames.map((game) => (
+                    <SlotCardItem
+                      key={`recent-${game['game-id']}`}
+                      game={game}
+                      isFavorite={favorites.includes(game['game-id'])}
+                      isHot={hotGameIdSet.has(game['game-id'])}
+                      isEnd={isPromoEndCategory}
+                      onClick={() => handleGameClick(game)}
+                      onToggleFavorite={handleFavoriteToggle}
+                    />
+                  ))}
+                </div>
+                <div className="flex h-20 items-center">
+                  <div className="h-px w-full bg-[#5a6ba1]/70" />
+                </div>
+              </section>
+            )}
             {lobbySections.map((section) => (
               <section key={section.key}>
-                <h3 className="mb-2 text-sm font-semibold text-gray-300">{section.title}</h3>
-                <div className="grid grid-cols-3 gap-2">
+                <div
+                  className="grid gap-2"
+                  style={{
+                    '--slot-card-width': SLOT_CARD_WIDTH_STYLE,
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(var(--slot-card-width), var(--slot-card-width)))',
+                    justifyContent: 'center',
+                  } as CSSProperties}
+                >
                   {section.items.map((game) => (
                     <SlotCardItem
                       key={game['game-id']}
@@ -421,6 +550,20 @@ export function LobbyPage() {
         initialFilters={filters}
         onClose={() => setFilterOpen(false)}
         onApply={applyFilters}
+      />
+
+      <SearchDrawer
+        open={searchOpen}
+        activeCategory={activeCategory}
+        activeSubCategory={activeSubCategory}
+        secondaryCategoryMap={SECONDARY_CATEGORY_MAP}
+        onClose={() => setSearchOpen(false)}
+        onSelectLobbyCategory={handleSearchSelectCategory}
+        onGameClick={handleGameClick}
+        onNavigate={(path) => {
+          setSearchOpen(false);
+          navigate(path);
+        }}
       />
     </div>
   );

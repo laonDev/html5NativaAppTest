@@ -1,0 +1,140 @@
+{
+"skeleton": {
+	"hash": "TgSuVomFF+U",
+	"spine": "4.2.43",
+	"x": -286,
+	"y": -47.76,
+	"width": 572.68,
+	"height": 95,
+	"images": "",
+	"audio": "C:/Users/DG-2110-PC-010/Spine/backup"
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "lightning_add1", "parent": "root", "x": -237.52, "y": -0.76, "color": "ff0000ff" },
+	{ "name": "title_distort", "parent": "root", "x": 1.55, "y": 2.39, "scaleX": 1.43, "scaleY": 1.43 },
+	{ "name": "lightning4", "parent": "root", "x": -0.02, "y": 2.93, "scaleX": 1.43, "scaleY": 1.43 },
+	{ "name": "lightning_add2", "parent": "root", "x": 238.68, "y": -0.76, "scaleX": -1, "color": "ff0000ff" },
+	{ "name": "lightning_add3", "parent": "root", "x": -238, "y": -0.76, "color": "ff0000ff" },
+	{ "name": "lightning_add4", "parent": "root", "x": 238.67, "y": -0.76, "scaleX": -1, "color": "ff0000ff" }
+],
+"slots": [
+	{ "name": "lightning3", "bone": "lightning_add1", "color": "ffffff00", "attachment": "resource/img/title/lightning_icon_add_02", "blend": "additive" },
+	{ "name": "lightning5", "bone": "lightning_add3", "color": "ffffff00", "attachment": "resource/img/title/lightning_icon_add_02", "blend": "additive" },
+	{ "name": "lightning6", "bone": "lightning_add4", "color": "ffffff00", "attachment": "resource/img/title/lightning_icon_add_02", "blend": "additive" },
+	{ "name": "lightning_add2", "bone": "lightning_add2", "color": "ffffff00", "attachment": "resource/img/title/lightning_icon_add_02", "blend": "additive" },
+	{ "name": "lightning2", "bone": "lightning4", "attachment": "resource/img/title/title_silver_blind", "blend": "multiply" },
+	{ "name": "title_distort", "bone": "title_distort" },
+	{ "name": "title_distort2", "bone": "title_distort", "blend": "additive" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"lightning2": {
+				"resource/img/title/title_silver_blind": { "width": 275, "height": 33 }
+			},
+			"lightning3": {
+				"resource/img/title/lightning_icon_add_02": { "x": 0.5, "y": 0.5, "width": 97, "height": 95 }
+			},
+			"lightning5": {
+				"resource/img/title/lightning_icon_add_02": { "x": 0.5, "y": 0.5, "width": 97, "height": 95 }
+			},
+			"lightning6": {
+				"resource/img/title/lightning_icon_add_02": { "x": 0.5, "y": 0.5, "width": 97, "height": 95 }
+			},
+			"lightning_add2": {
+				"resource/img/title/lightning_icon_add_02": { "x": 0.5, "y": 0.5, "width": 97, "height": 95 }
+			},
+			"title_distort": {
+				"resource/img/title/silver_distort": { "width": 275, "height": 33 }
+			},
+			"title_distort2": {
+				"resource/img/title/silver_distort_color": { "x": -1.25, "scaleX": 1.02, "width": 275, "height": 33 }
+			}
+		}
+	}
+],
+"animations": {
+	"hit": {
+		"slots": {
+			"lightning2": {
+				"attachment": [
+					{},
+					{ "time": 0.1, "name": "resource/img/title/title_silver_blind" },
+					{ "time": 0.3667 },
+					{ "time": 0.4333, "name": "resource/img/title/title_silver_blind" },
+					{ "time": 0.5 }
+				]
+			},
+			"lightning3": {
+				"rgba": [
+					{ "time": 0.1, "color": "ffffff00" },
+					{ "time": 0.1333, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.3667, "color": "ffffffff" },
+					{ "time": 0.4333, "color": "ffffff00" }
+				]
+			},
+			"lightning5": {
+				"rgba": [
+					{ "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.1, "color": "ffffff00" },
+					{ "time": 0.1333, "color": "ffffffff" },
+					{ "time": 0.3333, "color": "ffffff00" }
+				]
+			},
+			"lightning6": {
+				"rgba": [
+					{ "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.1, "color": "ffffff00" },
+					{ "time": 0.1333, "color": "ffffffff" },
+					{ "time": 0.3333, "color": "ffffff00" }
+				]
+			},
+			"lightning_add2": {
+				"rgba": [
+					{ "time": 0.1, "color": "ffffff00" },
+					{ "time": 0.1333, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.3667, "color": "ffffffff" },
+					{ "time": 0.4333, "color": "ffffff00" }
+				]
+			},
+			"title_distort": {
+				"attachment": [
+					{ "time": 0.161, "name": "resource/img/title/silver_distort" },
+					{ "time": 0.2667 },
+					{ "time": 0.3667, "name": "resource/img/title/silver_distort" },
+					{ "time": 0.4 }
+				]
+			},
+			"title_distort2": {
+				"attachment": [
+					{ "time": 0.161, "name": "resource/img/title/silver_distort_color" },
+					{ "time": 0.3053 },
+					{ "time": 2.8333 }
+				]
+			}
+		},
+		"bones": {
+			"title_distort": {
+				"translate": [
+					{ "time": 0.3333 },
+					{ "time": 0.3667, "x": 8.97 }
+				]
+			},
+			"lightning_add3": {
+				"scale": [
+					{ "time": 0.1333 },
+					{ "time": 0.3667, "x": 1.6, "y": 1.6 }
+				]
+			},
+			"lightning_add4": {
+				"scale": [
+					{ "time": 0.1333 },
+					{ "time": 0.3667, "x": 1.6, "y": 1.6 }
+				]
+			}
+		}
+	}
+}
+}

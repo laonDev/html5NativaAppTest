@@ -72,7 +72,7 @@ export function HistoryPage() {
         ) : items.length === 0 ? (
           <div className="py-12 text-center text-gray-500">No history found</div>
         ) : (
-          <div className="space-y-2">
+          <div className="ui-section-stack">
             {items.map((item) => (
               <div key={item.idx} className="flex items-center justify-between rounded-lg bg-[#16213e] p-3">
                 <div>
