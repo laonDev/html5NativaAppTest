@@ -24,9 +24,9 @@ export default function App() {
         <Route path="/slot" element={<SlotPage />} />
         <Route path="/crash" element={<CrashGamePageV2 />} />
         <Route path="/spine-tool" element={<SpineToolPage />} />
+        <Route path="/account" element={<AccountPage />} />
         <Route element={<MainLayout />}>
           <Route path="/lobby" element={<LobbyPage />} />
-          <Route path="/account" element={<AccountPage />} />
           <Route path="/bingo" element={<BingoPage />} />
           <Route path="/mission" element={<DailyMissionPage />} />
           <Route path="/tournament" element={<TournamentPage />} />

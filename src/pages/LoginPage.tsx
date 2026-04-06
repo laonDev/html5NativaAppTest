@@ -228,23 +228,20 @@ export function LoginPage() {
   };
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-center overflow-hidden">
+    <div className="relative h-full overflow-hidden">
 
-      {/* ── Background (디자이너 에셋 필요) ── */}
+      {/* ── Background ── */}
       <div className="absolute inset-0 bg-[#0b0c2a]">
-        {/* TODO: <img src={bgImage} className="h-full w-full object-cover" /> */}
+        <img src="/assets/images/bg/IMG_Homemain_Background.png" alt="" className="h-full w-full object-cover" />
       </div>
 
       {/* ── IMG_Logo ── */}
-      <div className="relative z-10 mb-8 flex flex-col items-center">
-        {/* TODO: 실제 로고 이미지로 교체 */}
-        {/* <img src={logoImage} alt="Casino Logo" className="h-20 w-auto" /> */}
-        <div className="flex items-center gap-1">
-          <span className="text-4xl font-black text-[#00c8ff]">⚡</span>
-          <span className="text-3xl font-black tracking-wider text-[#00c8ff]">SUPRVIC</span>
-        </div>
-        <p className="mt-1 text-xs font-semibold tracking-[0.4em] text-[#00c8ff]/70">CASINO</p>
-        <h1>TestTextArea</h1>
+      <div className="absolute left-1/2 top-[18%] z-10 -translate-x-1/2">
+        <img
+          src="/assets/images/ui/IMG_Login_Logo_Glow.png"
+          alt="SUPRVIC CASINO"
+          className="h-36 w-auto drop-shadow-[0_0_24px_rgba(0,200,255,0.45)]"
+        />
       </div>
 
       {/* ── Login_Box ── */}
@@ -252,19 +249,19 @@ export function LoginPage() {
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className="relative z-10 w-full max-w-sm rounded-2xl bg-[#0f1535]/90 px-6 py-7 shadow-2xl"
+        className="absolute left-1/2 top-[52%] z-10 w-[82%] max-w-[340px] -translate-x-1/2 rounded-2xl border border-[#1a2a5a]/60 bg-[#06091a]/80 px-6 py-8 shadow-2xl shadow-black/60 backdrop-blur-sm"
       >
         {/* ── Input_Group ── */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-3">
 
           {/* Input_Box_Email */}
-          <div className="rounded-xl border border-[#2a3a6a] bg-[#0a0e24] px-4 py-3">
+          <div className="rounded-xl border border-[#1e3a7a]/80 bg-[#08102a]/90 px-4 py-14">
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
-              className="w-full bg-transparent text-sm text-white placeholder-white/40 outline-none"
+              className="w-full bg-transparent text-sm text-white placeholder-white/35 outline-none"
             />
           </div>
 
@@ -284,7 +281,7 @@ export function LoginPage() {
           </AnimatePresence>
 
           {/* Input_Box_Password */}
-          <div className="mt-1 flex items-center rounded-xl border border-[#2a3a6a] bg-[#0a0e24] px-4 py-3">
+          <div className="flex items-center rounded-xl border border-[#1e3a7a]/80 bg-[#08102a]/90 px-4 py-14">
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Password"
@@ -338,14 +335,14 @@ export function LoginPage() {
           whileTap={{ scale: 0.97 }}
           onClick={handleSubmit}
           disabled={loading}
-          className="mt-5 w-full rounded-xl bg-gradient-to-r from-[#1a6dff] to-[#0044cc] py-4 text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-blue-900/50 disabled:opacity-50"
+          className="mt-7 w-full rounded-xl bg-gradient-to-b from-[#3a7fff] to-[#1a50e0] py-14 text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-blue-900/60 disabled:opacity-50"
         >
           {/* TXT_Connect */}
           REGISTER / LOG IN
         </motion.button>
 
         {/* ── LB_Forgot / BTN_Forgot_Email / LB_Or / BTN_Forgot_Password ── */}
-        <div className="mt-4 flex items-center justify-center gap-1 text-sm text-white/50">
+        <div className="mt-6 flex items-center justify-center gap-1 text-sm text-white/50">
           <span>Forgot</span>
           <button
             type="button"
