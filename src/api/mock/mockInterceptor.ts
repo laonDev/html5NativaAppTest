@@ -25,6 +25,10 @@ const clone = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));
 // Mutable state for bingo
 let bingoState = clone(mockHousey.houseyInfo);
 
+// Mutable state for daily missions
+let missionInfos: typeof mockDailyMissions.dailyMissionInfos = clone(mockDailyMissions.dailyMissionInfos);
+let missionOverallStatus = mockDailyMissions.status;
+
 const routes: MockRoute[] = [
   // Account
   {
@@ -161,23 +165,45 @@ const routes: MockRoute[] = [
   // Daily Mission
   {
     match: (url) => url.includes('daily_mission/list'),
-    handler: () => clone(mockDailyMissions),
-  },
-  {
-    match: (url) => url.includes('daily_mission/collect') && !url.includes('Collect_all'),
-    handler: () => ({ missionRewardType: 1, missionRewardValue: 500 }),
-  },
-  {
-    match: (url) => url.includes('daily_mission/Collect_all'),
     handler: () => ({
-      missionRewards: [
-        { missionIndex: 2, missionRewardType: 1, missionRewardValue: 300 },
-      ],
+      dailyMissionInfos: clone(missionInfos),
+      endDate: mockDailyMissions.endDate,
+      status: missionOverallStatus,
     }),
   },
   {
+    match: (url, method) => url.includes('daily_mission/collect') && !url.includes('Collect_all'),
+    handler: (config) => {
+      const body = config.data ? JSON.parse(config.data) : {};
+      const idx: number = body.missionIndex;
+      const mission = missionInfos.find((m) => m.missionIndex === idx);
+      if (mission) {
+        mission.status = 3; // COLLECTED
+        mission.minValue = mission.maxValue; // 완료 처리
+      }
+      return { missionRewardType: 1, missionRewardValue: mission?.rewardValue ?? 500 };
+    },
+  },
+  {
+    match: (url) => url.includes('daily_mission/Collect_all'),
+    handler: () => {
+      const rewards: { missionIndex: number; missionRewardType: number; missionRewardValue: number }[] = [];
+      missionInfos.forEach((m) => {
+        if (m.status === 2) { // ACHIEVED → COLLECTED
+          rewards.push({ missionIndex: m.missionIndex, missionRewardType: 1, missionRewardValue: m.rewardValue });
+          m.status = 3;
+          m.minValue = m.maxValue;
+        }
+      });
+      return { missionRewards: rewards };
+    },
+  },
+  {
     match: (url) => url.includes('daily_mission/complete'),
-    handler: () => ({ voltType: 2, voltValue: 1 }),
+    handler: () => {
+      missionOverallStatus = 3; // ALL DONE
+      return { voltType: 2, voltValue: 1 };
+    },
   },
 
   // Tournament

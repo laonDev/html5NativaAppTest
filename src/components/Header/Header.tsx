@@ -35,6 +35,7 @@ export function Header() {
   const userInfo = useAuthStore((s) => s.userInfo);
 
   const updateMission = useMissionStore((s) => s.updateMission);
+  const devSetAllCollected = useMissionStore((s) => s.devSetAllCollected);
   const missions = useMissionStore((s) => s.missions);
 
   const isVoltMax = totalVolt >= 99;
@@ -56,17 +57,27 @@ export function Header() {
       {/* Right — [MOCK TEST] + BTN_Thunder_Icon + BTN_Profile */}
       <div className="flex items-center gap-3">
 
-        {/* Mock 전용 미션 클리어 테스트 버튼 */}
+        {/* DEV 전용 미션 테스트 버튼 그룹 */}
         {IS_DEV && (
-          <button
-            className="rounded bg-yellow-500/20 px-2 py-1 text-[10px] font-bold text-yellow-300 ring-1 ring-yellow-400/30 active:opacity-70"
-            onClick={() => {
-              const target = missions.find((m) => m.status === MISSION_STATUS.IN_PROGRESS);
-              if (target) updateMission(target.missionIndex, MISSION_STATUS.ACHIEVED);
-            }}
-          >
-            MOCK
-          </button>
+          <div className="flex items-center gap-1">
+            {/* 토스트 테스트 — IN_PROGRESS 미션 하나를 ACHIEVED로 */}
+            <button
+              className="rounded bg-yellow-500/20 px-2 py-1 text-[10px] font-bold text-yellow-300 ring-1 ring-yellow-400/30 active:opacity-70"
+              onClick={() => {
+                const target = missions.find((m) => m.status === MISSION_STATUS.IN_PROGRESS);
+                if (target) updateMission(target.missionIndex, MISSION_STATUS.ACHIEVED);
+              }}
+            >
+              M1
+            </button>
+            {/* COLLECT 버튼 테스트 — 모든 미션을 COLLECTED로 */}
+            <button
+              className="rounded bg-green-500/20 px-2 py-1 text-[10px] font-bold text-green-300 ring-1 ring-green-400/30 active:opacity-70"
+              onClick={devSetAllCollected}
+            >
+              M2
+            </button>
+          </div>
         )}
 
         {/* BTN_Thunder_Icon */}
