@@ -123,13 +123,19 @@ export function BannerCarousel({
             <button
               key={item.key}
               type="button"
-              className={joinClassName('block w-full shrink-0', itemAspectClass)}
+              className={joinClassName('relative block w-full shrink-0 overflow-hidden', itemAspectClass)}
               onClick={() => {
                 pauseAndScheduleResume();
                 item.onClick?.();
               }}
             >
-              <img src={item.imageUrl} alt={item.alt} className="h-full w-full object-cover" loading="lazy" />
+              <img
+                src={item.imageUrl}
+                alt={item.alt}
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ objectPosition: 'center bottom' }}
+                loading="lazy"
+              />
             </button>
           ))}
         </div>

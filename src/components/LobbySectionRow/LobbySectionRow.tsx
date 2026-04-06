@@ -34,7 +34,7 @@ export function LobbySectionRow({
   return (
     <section className="pb-4">
       <div className="mb-2 px-4">
-        <h3 className="inline-flex items-center rounded-md border border-[#4c5d8b] bg-[#1a274a] px-2 py-1 text-xs font-semibold uppercase tracking-[0.04em] text-[#d5def8]">
+        <h3 className="inline-flex items-center px-0 py-0 text-xs font-semibold uppercase tracking-[0.04em] text-[#d5def8]">
           {title}
         </h3>
       </div>

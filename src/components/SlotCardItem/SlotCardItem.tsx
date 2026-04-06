@@ -25,10 +25,8 @@ export function SlotCardItem({ game, isFavorite, isHot = false, isEnd = false, o
     <button
       type="button"
       onClick={onClick}
-      className="group relative w-full overflow-hidden rounded-xl border border-[#5b6b9b]/70 bg-gradient-to-b from-[#25345e] to-[#141d39] text-left shadow-[0_4px_14px_rgba(8,12,26,0.45)] transition-transform duration-150 active:scale-[0.98]"
+      className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-b from-[#25345e] to-[#141d39] text-left shadow-[0_4px_14px_rgba(8,12,26,0.45)] transition-transform duration-150 active:scale-[0.98]"
     >
-      <div className="pointer-events-none absolute inset-[1px] rounded-[11px] border border-white/10" />
-
       <div className="relative aspect-[360/230] w-full bg-[#0f3460]">
         <img
           src={imageUrl}

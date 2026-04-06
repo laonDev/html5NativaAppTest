@@ -33,13 +33,13 @@ const SECONDARY_CATEGORY_MAP: Record<string, string[]> = {
   mypick: ['slot'],
 };
 
-const FILTER_ICON_DEFAULT = '/imgResource/unity-main-lobby/top-ui/BTN_Category_Filter.png';
-const FILTER_ICON_ACTIVE = '/imgResource/unity-main-lobby/top-ui/BTN_Top_Filter_Active_Background.png';
+const FLOAT_ICON_SPRITE = '/assets/images/main_hud/search+top.png';
+const FLOAT_ICON_FILTER = '/assets/images/main_hud/icon_filter.png';
 
 const PROVIDERS = ['DUG', 'PRAGMATIC', 'SUPRNATION', 'CASINO888'] as const;
 const JACKPOTS = ['MINI', 'MAJOR', 'MEGA'] as const;
 const VOLATILITY = ['LOW', 'MEDIUM', 'HIGH'] as const;
-const HOME_BANNER_MAX_HEIGHT = 148;
+const HOME_BANNER_MAX_HEIGHT = 185;
 const HOME_SECTION_ITEM_LIMIT = 24;
 const SLOT_CARD_WIDTH_STYLE = 'clamp(148px, calc((100vw - 44px) / 2.25), 186px)';
 
@@ -143,22 +143,22 @@ export function LobbyPage() {
   const banners = useMemo<BannerItem[]>(() => [
     {
       key: 'banner-00',
-      imageUrl: '/imgResource/unity-main-lobby/backgrounds-and-banners/IMG_Top_Banner_00.png',
+      imageUrl: '/mock-cdn/banners/IMG_Top_Banner_00.png',
       alt: 'Promotion Banner 1',
     },
     {
       key: 'banner-01',
-      imageUrl: '/imgResource/unity-main-lobby/backgrounds-and-banners/IMG_Top_Banner_01.png',
+      imageUrl: '/mock-cdn/banners/IMG_Top_Banner_01.png',
       alt: 'Promotion Banner 2',
     },
     {
       key: 'banner-02',
-      imageUrl: '/imgResource/unity-main-lobby/backgrounds-and-banners/IMG_Top_Banner_02.png',
+      imageUrl: '/mock-cdn/banners/IMG_Top_Banner_02.png',
       alt: 'Promotion Banner 3',
     },
     {
       key: 'banner-03',
-      imageUrl: '/imgResource/unity-main-lobby/backgrounds-and-banners/IMG_Top_Banner_03.png',
+      imageUrl: '/mock-cdn/banners/IMG_Top_Banner_03.png',
       alt: 'Promotion Banner 4',
     },
   ], []);
@@ -381,14 +381,27 @@ export function LobbyPage() {
   }, [resetListScroll]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div
+      className="flex h-full flex-col bg-[#070c26]"
+      style={{
+        backgroundImage: "url('/assets/images/main_hud/main_bg.png')",
+        backgroundPosition: 'center top',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+      }}
+    >
       {isHome && (
         <div
           className="shrink-0 overflow-hidden"
           style={{ height: `${homeBannerHeight}px`, visibility: showHomeBanner ? 'visible' : 'hidden' }}
         >
-          <div style={{ transform: `translateY(-${clampedHomeScroll}px)` }}>
-            <BannerCarousel key="banner-home" items={banners} className="shrink-0" />
+          <div className="flex h-full items-end">
+            <BannerCarousel
+              key="banner-home"
+              items={banners}
+              className="w-full shrink-0"
+              itemAspectClass="aspect-[358/185]"
+            />
           </div>
         </div>
       )}
@@ -424,16 +437,40 @@ export function LobbyPage() {
 
       <FloatingActionGroup
         items={[
-          ...(showScrollTopAction ? [{ key: 'to-top', label: 'Top', icon: '↑', onClick: scrollToTop }] : []),
-          { key: 'search', label: 'Search', icon: '🔍', onClick: openSearch },
+          ...(showScrollTopAction
+            ? [{
+              key: 'to-top',
+              label: 'Top',
+              icon: (
+                <img
+                  src={FLOAT_ICON_SPRITE}
+                  alt=""
+                  className="h-11 w-11 rounded-full object-cover object-top"
+                />
+              ),
+              onClick: scrollToTop,
+            }]
+            : []),
+          {
+            key: 'search',
+            label: 'Search',
+            icon: (
+              <img
+                src={FLOAT_ICON_SPRITE}
+                alt=""
+                className="h-11 w-11 rounded-full object-cover object-bottom"
+              />
+            ),
+            onClick: openSearch,
+          },
           {
             key: 'filter',
             label: 'Filter',
             icon: (
               <img
-                src={activeFilterChips.length > 0 ? FILTER_ICON_ACTIVE : FILTER_ICON_DEFAULT}
+                src={FLOAT_ICON_FILTER}
                 alt=""
-                className="h-5 w-5 object-contain"
+                className="h-11 w-11 rounded-full object-cover"
               />
             ),
             onClick: openFilter,
