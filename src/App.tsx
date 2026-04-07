@@ -5,7 +5,7 @@ import { MainLayout } from './components/MainLayout';
 import { LoginPage } from './pages/LoginPage';
 import { LobbyPage } from './pages/LobbyPage';
 import { SlotPage } from './pages/SlotPage';
-import { AccountPage } from './pages/AccountPage';
+import { MyAccountPage } from './pages/MyAccountPage';
 import { BingoPage } from './pages/BingoPage';
 import { DailyMissionPage } from './pages/DailyMissionPage';
 import { TournamentPage } from './pages/TournamentPage';
@@ -24,7 +24,7 @@ export default function App() {
         <Route path="/slot" element={<SlotPage />} />
         <Route path="/crash" element={<CrashGamePageV2 />} />
         <Route path="/spine-tool" element={<SpineToolPage />} />
-        <Route path="/account" element={<AccountPage />} />
+        <Route path="/account" element={<MyAccountPage />} />
         <Route element={<MainLayout />}>
           <Route path="/lobby" element={<LobbyPage />} />
           <Route path="/bingo" element={<BingoPage />} />
