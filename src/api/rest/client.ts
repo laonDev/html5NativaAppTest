@@ -69,45 +69,60 @@ if (USE_MOCK) {
         async (error: any) => {
             const originalRequest = error.config;
 
+            // 401 에러이고, 아직 재시도를 하지 않은 패킷일 경우
             if (error.response?.status === 401 && !originalRequest._retry) {
                 originalRequest._retry = true;
 
+                // 이미 누군가 갱신 중이라면 큐(Queue)에 들어가서 대기
                 if (isRefreshing) {
                     return new Promise((resolve) => {
                         addRefreshSubscriber((newToken) => {
-                            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                            if (originalRequest.headers) {
+                                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                            }
                             resolve(client(originalRequest));
                         });
                     });
                 }
 
+                // 내가 최초의 401 패킷이라면 갱신 프로세스 시작
                 isRefreshing = true;
 
                 try {
                     console.log('[API] 세션 만료. 안전한 토큰 갱신 시퀀스 진입...');
                     let newToken = "";
 
-                    // ✅ 스위치가 켜져 있으면 (팀원들은 무조건 켜짐) 우회 로직 실행
+                    // 스위치가 켜져 있으면 우회 로직 실행
                     if (ENABLE_MOCK_API) {
                         console.log('[API] 개발 모드: 가짜 토큰으로 갱신을 시뮬레이션합니다.');
                         newToken = "NEW_VALID_TOKEN_MOCK_" + Date.now();
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     } else {
                         console.log('[API] 운영 모드: 실제 서버에 토큰 갱신을 요청합니다.');
-                        // TODO: 실제 API 호출 로직 
-                        // const refreshResponse = await axios.post('/api/auth/refresh');
-                        // newToken = refreshResponse.data.token;
+
+                        // 중요: 여기서 client 인스턴스를 쓰면 401 무한 루프에 빠질 수 있으므로 순수 axios 사용
+                        const refreshResponse = await axios.post(`${API_BASE_URL}/account/refresh`, {
+                            // 필요 시 백엔드 스펙에 맞춰 refreshToken 파라미터 추가
+                            // refreshToken: localStorage.getItem('refreshToken') 
+                        });
+
+                        // 백엔드 응답 스펙에 맞춰 수정 (예: data.token 또는 data.accessToken)
+                        newToken = refreshResponse.data?.token ?? refreshResponse.data?.accessToken;
                     }
 
+                    // 새 토큰 저장
                     localStorage.setItem('token', newToken);
 
                     isRefreshing = false;
-                    onRefreshed(newToken);
+                    onRefreshed(newToken); // 큐에 대기 중이던 애들한테 새 토큰 뿌리고 출발시킴
 
-                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                    return client(originalRequest);
+                    if (originalRequest.headers) {
+                        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                    }
+                    return client(originalRequest); // 처음 실패했던 내 패킷 재발송
 
                 } catch (refreshError) {
+                    // 리프레시마저 실패하면 완전 로그아웃
                     isRefreshing = false;
                     localStorage.removeItem('token');
                     window.location.href = '/login';

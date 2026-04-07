@@ -1,0 +1,9 @@
+deletemypick.png
+size:817,138
+filter:Linear,Linear
+pma:true
+mypick/Dimd_Box
+bounds:665,2,134,150
+rotate:90
+mypick/typo
+bounds:2,21,661,115
