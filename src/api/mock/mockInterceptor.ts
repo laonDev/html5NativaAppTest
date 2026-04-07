@@ -21,6 +21,18 @@ interface MockRoute {
 
 // Deep clone helper
 const clone = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));
+const parseBody = (data: unknown): Record<string, unknown> => {
+  if (!data) return {};
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data) as Record<string, unknown>;
+    } catch {
+      return {};
+    }
+  }
+  if (typeof data === 'object') return data as Record<string, unknown>;
+  return {};
+};
 
 // Mutable state for bingo
 let bingoState = clone(mockHousey.houseyInfo);
@@ -28,6 +40,10 @@ let bingoState = clone(mockHousey.houseyInfo);
 // Mutable state for daily missions
 let missionInfos: typeof mockDailyMissions.dailyMissionInfos = clone(mockDailyMissions.dailyMissionInfos);
 let missionOverallStatus = mockDailyMissions.status;
+let slotCash = mockLobbyData.balanceInfo.cash;
+let slotBonus = mockLobbyData.balanceInfo.bonus;
+let slotTicketGauge = mockLobbyData.gameBalanceInfo.ticketInfo.gauge;
+const slotTicketMaxGauge = mockLobbyData.gameBalanceInfo.ticketInfo.maxGauge;
 
 const routes: MockRoute[] = [
   // Account
@@ -90,6 +106,51 @@ const routes: MockRoute[] = [
       slotInfo: { slotType: 1, betRange: [100, 200, 500, 1000], lineCount: 20, payoutArray: [], reelArray: [], jackpot: 0, jackpotInitMulti: 0, jackpotForDisplay: 0, isJackpotParty: false, isMultiJackpot: false, multiJackpots: [], multiJackpotsForDisplay: [], buyFeatures: {}, extraPays: {} },
       slotState: {},
     }),
+  },
+  {
+    match: (url) => url.includes('casino/slot/spin'),
+    handler: (config) => {
+      const body = parseBody(config.data);
+      const totalBet = Number(body.totalBet ?? 1000);
+      const beforeCash = slotCash;
+      const beforeBonus = slotBonus;
+      const win = Math.random() < 0.45 ? Math.floor(totalBet * (0.4 + Math.random() * 2.2)) : 0;
+      slotCash = Math.max(0, slotCash - totalBet + win);
+
+      slotTicketGauge = Math.min(slotTicketMaxGauge, slotTicketGauge + Math.floor(8 + Math.random() * 21));
+      const voltType = Math.random() < 0.2 ? 1 : 0;
+      let missionUpdate:
+        | { missionIndex: number; status: number; minValue: number; maxValue: number }
+        | undefined;
+
+      // 슬롯 미션(type=1) 진행/달성 처리
+      const slotMission = missionInfos.find((m) => m.missionType === 1 && m.status !== 3);
+      if (slotMission) {
+        const before = slotMission.minValue;
+        slotMission.minValue = Math.min(slotMission.maxValue, slotMission.minValue + 1);
+        missionUpdate = {
+          missionIndex: slotMission.missionIndex,
+          status: slotMission.status,
+          minValue: slotMission.minValue,
+          maxValue: slotMission.maxValue,
+        };
+        if (before < slotMission.maxValue && slotMission.minValue >= slotMission.maxValue && slotMission.status === 1) {
+          slotMission.status = 2; // ACHIEVED
+          missionUpdate.status = 2;
+        }
+      }
+
+      return {
+        cash: slotCash,
+        bonus: slotBonus,
+        beforeCash,
+        beforeBonus,
+        voltType,
+        ticketGauge: slotTicketGauge,
+        ticketMaxGauge: slotTicketMaxGauge,
+        ...(missionUpdate ? { missionUpdate } : {}),
+      };
+    },
   },
 
   // Housey / Bingo
@@ -174,8 +235,8 @@ const routes: MockRoute[] = [
   {
     match: (url, method) => url.includes('daily_mission/collect') && !url.includes('Collect_all'),
     handler: (config) => {
-      const body = config.data ? JSON.parse(config.data) : {};
-      const idx: number = body.missionIndex;
+      const body = parseBody(config.data);
+      const idx = Number(body.missionIndex);
       const mission = missionInfos.find((m) => m.missionIndex === idx);
       if (mission) {
         mission.status = 3; // COLLECTED
@@ -284,6 +345,18 @@ const routes: MockRoute[] = [
       userInfo: { balance: 250000 },
       slotInfo: { slotType: 100, betRange: [100, 200], lineCount: 10, payoutArray: [], reelArray: [], jackpot: 0, jackpotInitMulti: 0, jackpotForDisplay: 0, isJackpotParty: false, isMultiJackpot: false, multiJackpots: [], multiJackpotsForDisplay: [], buyFeatures: {}, extraPays: {} },
       slotState: {},
+    }),
+  },
+  {
+    match: (url) => url.includes('viccon/slot/spin'),
+    handler: () => ({
+      cash: slotCash,
+      bonus: slotBonus,
+      beforeCash: slotCash,
+      beforeBonus: slotBonus,
+      voltType: 0,
+      ticketGauge: slotTicketGauge,
+      ticketMaxGauge: slotTicketMaxGauge,
     }),
   },
   {

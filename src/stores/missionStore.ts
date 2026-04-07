@@ -12,6 +12,7 @@ interface MissionState {
 
   setMissions: (missions: DailyMissionInfo[], endDate: string, status: number) => void;
   updateMission: (index: number, status: number) => void;
+  updateMissionProgress: (index: number, minValue: number, status?: number, maxValue?: number) => void;
   clearClearNotice: () => void;
   /** DEV 전용 — 모든 미션을 COLLECTED 상태로 만들어 COLLECT 버튼 테스트 */
   devSetAllCollected: () => void;
@@ -42,6 +43,30 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       hasCompletable: missions.some((m) => m.status === 2),
       // ACHIEVED 로 전환될 때만 토스트 트리거
       ...(status === MISSION_STATUS.ACHIEVED ? { pendingClearNotice: { ...mission } } : {}),
+    });
+  },
+
+  updateMissionProgress: (index, minValue, status, maxValue) => {
+    const missions = [...get().missions];
+    const mission = missions.find((m) => m.missionIndex === index);
+    if (!mission) return;
+
+    const prevStatus = mission.status;
+    mission.minValue = minValue;
+    if (typeof maxValue === 'number') {
+      mission.maxValue = maxValue;
+    }
+    if (typeof status === 'number') {
+      mission.status = status;
+    }
+
+    const becameAchieved =
+      prevStatus !== MISSION_STATUS.ACHIEVED && mission.status === MISSION_STATUS.ACHIEVED;
+
+    set({
+      missions,
+      hasCompletable: missions.some((m) => m.status === MISSION_STATUS.ACHIEVED),
+      ...(becameAchieved ? { pendingClearNotice: { ...mission } } : {}),
     });
   },
 
