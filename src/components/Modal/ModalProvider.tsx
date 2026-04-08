@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ModalContextType {
-  openModal: (content: ReactNode, key?: string) => void;
+  openModal: (content: ReactNode, key?: string, options?: ModalOptions) => void;
   closeModal: () => void;
 }
 
@@ -11,15 +11,31 @@ const ModalContext = createContext<ModalContextType>({ openModal: () => {}, clos
 
 export const useModal = () => useContext(ModalContext);
 
-export function ModalProvider({ children }: { children: ReactNode }) {
-  const [modal, setModal] = useState<{ content: ReactNode; key: string } | null>(null);
+type ModalPlacement = 'bottom' | 'center';
 
-  const openModal = useCallback((content: ReactNode, key = 'default') => {
+interface ModalOptions {
+  placement?: ModalPlacement;
+  panelClassName?: string;
+  overlayClassName?: string;
+}
+
+function joinClassName(...values: Array<string | undefined | false>) {
+  return values.filter(Boolean).join(' ');
+}
+
+export function ModalProvider({ children }: { children: ReactNode }) {
+  const [modal, setModal] = useState<{
+    content: ReactNode;
+    key: string;
+    options?: ModalOptions;
+  } | null>(null);
+
+  const openModal = useCallback((content: ReactNode, key = 'default', options?: ModalOptions) => {
     setModal((prev) => {
       if (prev?.key === key) {
-        return { content, key };
+        return { content, key, options };
       }
-      return { content, key };
+      return { content, key, options };
     });
   }, []);
 
@@ -49,15 +65,23 @@ export function ModalProvider({ children }: { children: ReactNode }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-end justify-center bg-black/60"
+              className={joinClassName(
+                'fixed inset-0 z-50 flex justify-center bg-black/60',
+                modal.options?.placement === 'center' ? 'items-center' : 'items-end',
+                modal.options?.overlayClassName,
+              )}
               onClick={closeModal}
             >
               <motion.div
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
+                initial={modal.options?.placement === 'center' ? { scale: 0.96, opacity: 0 } : { y: '100%' }}
+                animate={modal.options?.placement === 'center' ? { scale: 1, opacity: 1 } : { y: 0 }}
+                exit={modal.options?.placement === 'center' ? { scale: 0.96, opacity: 0 } : { y: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="w-full max-w-lg rounded-t-2xl bg-[#16213e] p-4"
+                className={joinClassName(
+                  'w-full max-w-lg rounded-t-2xl bg-[#16213e] p-4',
+                  modal.options?.placement === 'center' && 'rounded-2xl',
+                  modal.options?.panelClassName,
+                )}
                 style={{ paddingBottom: 'calc(16px + var(--safe-bottom))' }}
                 onClick={(e) => e.stopPropagation()}
               >

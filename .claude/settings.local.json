@@ -20,7 +20,11 @@
       "Bash(grep -E \"\\\\.\\(cs|asset|json\\)$\")",
       "Read(//d/NG_Workspace/igaming-s4/**)",
       "Read(//d D:/NG_Workspace/**)",
-      "Bash(grep -r server_group D:NG_Workspaceigaming-s4 --include=*.cs)"
+      "Bash(grep -r server_group D:NG_Workspaceigaming-s4 --include=*.cs)",
+      "Skill(update-config)",
+      "Bash(afplay /System/Library/Sounds/Glass.aiff)",
+      "Bash(osascript -e 'display notification \"작업이 완료되었습니다\" with title \"Claude Code\" sound name \"Glass\"')",
+      "Bash(python3:*)"
     ]
   }
 }
