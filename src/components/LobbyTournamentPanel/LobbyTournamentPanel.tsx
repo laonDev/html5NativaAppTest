@@ -9,11 +9,12 @@ export function LobbyTournamentPanel() {
   const points = rankingData?.point ?? 0;
 
   return (
-    <section className="flex justify-center px-2">
+    <section className="flex justify-center">
       <button
         type="button"
         onClick={() => navigate('/tournament')}
-        className="relative block h-[81px] w-[358px] overflow-hidden rounded-[14px] text-left"
+        className="relative block w-full overflow-hidden rounded-[14px] text-left"
+        style={{ width: 'calc(100% - 20px)', aspectRatio: '358 / 81' }}
       >
         <img
           src="/assets/images/main_hud/tounerment_tab.png"
@@ -22,13 +23,13 @@ export function LobbyTournamentPanel() {
         />
 
         <div className="absolute left-[44.5%] top-[58%] flex h-[24%] w-[14%] -translate-x-1/2 -translate-y-1/2 items-center justify-center">
-          <span className="text-[13px] font-black text-white">
+          <span className="translate-y-[6px] text-[13px] font-black text-white">
             {rank > 0 ? `#${rank}` : '-'}
           </span>
         </div>
 
         <div className="absolute left-[70%] top-[58%] flex h-[24%] w-[22%] -translate-y-1/2 items-center justify-end pr-[5%]">
-          <span className="text-[13px] font-black text-[#ffe17a]">
+          <span className="translate-y-[6px] text-[13px] font-black text-[#ffe17a]">
             {points.toLocaleString()}
           </span>
         </div>

@@ -13,11 +13,16 @@ export function LobbyCurrencyPanel() {
   const navigate = useNavigate();
   const viccon = useBalanceStore((s) => s.viccon);
   const ticketCount = useTicketStore((s) => s.count);
+  const ticketGauge = useTicketStore((s) => s.gauge);
+  const ticketMaxGauge = useTicketStore((s) => s.maxGauge);
 
   return (
-    <section className="flex justify-center px-2">
-      <div className="w-[358px] rounded-[14px]">
-        <div className="relative block h-[156px] w-[358px] overflow-hidden rounded-[14px] text-left">
+    <section className="flex justify-center">
+      <div className="w-full rounded-[14px]" style={{ width: 'calc(100% - 20px)' }}>
+        <div
+          className="relative block w-full overflow-hidden rounded-[14px] text-left"
+          style={{ aspectRatio: '358 / 156' }}
+        >
           <img
             src="/assets/images/main_hud/ticket_tab.png"
             alt="Tickets"
@@ -47,11 +52,22 @@ export function LobbyCurrencyPanel() {
             </button>
           </div>
 
-          <div className="pointer-events-none absolute right-[23.2%] top-[44.5%]">
+          <div className="pointer-events-none absolute right-[23.2%] top-[44.5%] translate-x-[90px] translate-y-[30px]">
             <img src="/assets/images/main_hud/ticket_number_tab.png" alt="" className="h-[28px] w-[72px] object-contain opacity-90" />
-            <span className="absolute inset-0 flex items-center justify-center text-[14px] font-black text-[#d6ecff]">
+            <span className="absolute inset-0 flex items-center justify-center -translate-y-[3px] text-[14px] font-black text-[#d6ecff]">
               {ticketCount}
             </span>
+          </div>
+
+          <div className="pointer-events-none absolute right-[18%] top-[60.5%] w-[118px] translate-x-[50px] translate-y-[30px]">
+            <div className="h-[6px] w-full rounded-full bg-[#0a1338]/80 ring-1 ring-[#7ad3ff]/30">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[#3cc9ff] to-[#7bff7b]"
+                style={{
+                  width: ticketMaxGauge > 0 ? `${Math.min(100, (ticketGauge / ticketMaxGauge) * 100)}%` : '0%',
+                }}
+              />
+            </div>
           </div>
 
           <button
