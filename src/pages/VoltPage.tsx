@@ -196,8 +196,14 @@ export function VoltPage() {
                     alt={item.name}
                     className="absolute left-1/2 top-1/2 h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 object-contain"
                   />
-                  <span className="absolute right-0 top-1 rounded-full bg-[#ff2b34] px-2 py-0.5 text-[13px] font-bold leading-none text-white shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
-                    {item.count > 99 ? '99+' : item.count}
+                  <span className="absolute right-0 top-1">
+                    <span
+                      className="absolute inset-0 rounded-full bg-[#ff2b34] shadow-[0_2px_10px_rgba(0,0,0,0.55)]"
+                      style={{ transform: 'scaleX(2) scaleY(1)' }}
+                    />
+                    <span className="relative rounded-full bg-[#ff2b34] px-3 py-1 text-[16px] font-black leading-none text-white shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
+                      {item.count > 99 ? '99+' : item.count}
+                    </span>
                   </span>
                   {opening === item.voltType && (
                     <span className="absolute inset-0 rounded-full bg-black/40 text-[12px] font-semibold">OPENING...</span>
