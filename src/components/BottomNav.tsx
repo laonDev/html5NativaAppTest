@@ -76,7 +76,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="relative flex items-end justify-around bg-[#0d0b1a] shadow-[0_-1px_0_rgba(255,255,255,0.06)]"
+      className="relative z-30 flex items-end justify-around bg-[#0d0b1a] shadow-[0_-1px_0_rgba(255,255,255,0.06)]"
       style={{ paddingBottom: 'var(--safe-bottom)' }}
     >
       {/* Left 2 items */}
