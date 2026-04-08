@@ -1,0 +1,139 @@
+.crash-layout {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #0b0f1a;
+}
+
+.crash-header-wrap {
+  height: 60px;
+  position: relative;
+  z-index: 5;
+}
+
+.crash-play-field {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0b0f1a;
+  overflow: hidden;
+}
+
+.crash-bg-spine {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.crash-play-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+}
+
+.crash-ship-layer {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.crash-play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.crash-multiplier {
+  font-size: 48px;
+  font-weight: 700;
+  color: #e94560;
+}
+
+.crash-countdown {
+  font-size: 32px;
+  font-weight: 700;
+  color: #e94560;
+}
+
+.crash-state {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+
+
+
+.crash-bottom-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: #132033;
+  overflow: hidden;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.crash-bottom-sheet.collapsed {
+  height: 190px;
+}
+
+.crash-bottom-sheet.expanded {
+  height: 420px;
+}
+
+.bottom-tab-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.bottom-tab-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bottom-tab-button {
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.6;
+  padding: 0 4px;
+  margin: 0;
+  line-height: 1;
+}
+
+.bottom-tab-button.active {
+  opacity: 1;
+}
+
+.bottom-toggle-button {
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+}
