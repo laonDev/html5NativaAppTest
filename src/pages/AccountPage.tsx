@@ -339,6 +339,7 @@ export function AccountPage() {
                 icon={<IconSetting />}
                 title="Setting"
                 subtitle="Password / Notification / Sound / Vibration"
+                onClick={() => navigate('/setting')}
               />
               <MenuItem
                 icon={<IconHistory />}
