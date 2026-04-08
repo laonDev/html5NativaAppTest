@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage';
 import { LobbyPage } from './pages/LobbyPage';
 import { SlotPage } from './pages/SlotPage';
 import { AccountPage } from './pages/AccountPage';
+import { SettingPage } from './pages/SettingPage';
 import { BingoPage } from './pages/BingoPage';
 import { DailyMissionPage } from './pages/DailyMissionPage';
 import { TournamentPage } from './pages/TournamentPage';
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/crash" element={<CrashGamePageV2 />} />
         <Route path="/spine-tool" element={<SpineToolPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/setting" element={<SettingPage />} />
         <Route element={<MainLayout />}>
           <Route path="/lobby" element={<LobbyPage />} />
           <Route path="/bingo" element={<BingoPage />} />

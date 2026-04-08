@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { useBalanceStore, formatBalance } from '@/stores/balanceStore';
+import { useVoltStore } from '@/stores/voltStore';
+import { VOLT_NAMES, VOLT_COLORS } from '@/types/volt';
+import { useTicketStore } from '@/stores/ticketStore';
+import { useMissionStore } from '@/stores/missionStore';
+import { useTournamentStore } from '@/stores/tournamentStore';
 import { accountApi } from '@/api/rest';
 
 // ── Tab type ──────────────────────────────────────────────────────────────────
@@ -110,9 +116,25 @@ export function AccountPage() {
   const bonus = useBalanceStore((s) => s.bonus);
   const balance = useBalanceStore((s) => s.balance);
 
+  // Earned tab stores
+  const voltList = useVoltStore((s) => s.voltList);
+  const voltTotal = useVoltStore((s) => s.totalCount);
+  const ticketGauge = useTicketStore((s) => s.gauge);
+  const ticketMaxGauge = useTicketStore((s) => s.maxGauge);
+  const ticketLevel = useTicketStore((s) => s.level);
+  const ticketList = useTicketStore((s) => s.ticketList);
+  const missions = useMissionStore((s) => s.missions);
+  const currentUser = useTournamentStore((s) => s.currentUser);
+  const viccon = useBalanceStore((s) => s.viccon);
+  const bingoCoin = useBalanceStore((s) => s.bingoCoin);
+
+  const missionCollected = missions.filter((m) => m.status === 3).length;
+  const missionTotal = missions.length;
+
   const [tab, setTab] = useState<Tab>('profile');
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [editing, setEditing] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleSaveNickname = async () => {
     try {
@@ -131,7 +153,52 @@ export function AccountPage() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-gradient-to-b from-[#050d35] to-[#030820]">
+    <div className="relative flex h-full flex-col bg-gradient-to-b from-[#050d35] to-[#030820]">
+
+      {/* ── Logout Confirm Popup ── */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 px-8"
+          >
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+              className="w-full max-w-[320px] overflow-hidden rounded-2xl ring-1 ring-white/10 shadow-2xl shadow-black/70"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-b from-[#3a7fff] to-[#1a50e0] px-6 py-4 text-center">
+                <p className="text-lg font-black tracking-widest text-white">LOG OUT</p>
+              </div>
+              {/* Body */}
+              <div className="bg-[#0a1230] px-6 py-7 text-center">
+                <p className="text-base font-semibold text-white">Are you sure you want to leave?</p>
+                <div className="mt-6 flex gap-3">
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleLogout}
+                    className="flex-1 rounded-xl bg-gradient-to-b from-[#5adc5a] to-[#28a028] py-3 text-sm font-black tracking-widest text-white shadow shadow-green-900/50 active:opacity-80"
+                  >
+                    LOGOUT
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowLogoutConfirm(false)}
+                    className="flex-1 rounded-xl bg-gradient-to-b from-[#ff5a5a] to-[#d02020] py-3 text-sm font-black tracking-widest text-white shadow shadow-red-900/50 active:opacity-80"
+                  >
+                    CANCEL
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-4 py-3.5">
@@ -272,6 +339,7 @@ export function AccountPage() {
                 icon={<IconSetting />}
                 title="Setting"
                 subtitle="Password / Notification / Sound / Vibration"
+                onClick={() => navigate('/setting')}
               />
               <MenuItem
                 icon={<IconHistory />}
@@ -298,7 +366,7 @@ export function AccountPage() {
                 icon={<IconLogout />}
                 title="Logout"
                 subtitle="Logout"
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)}
                 danger
               />
             </div>
@@ -307,8 +375,169 @@ export function AccountPage() {
         )}
 
         {tab === 'earned' && (
-          <div className="flex flex-col items-center justify-center py-16 text-white/30">
-            <p className="text-sm">Earned content coming soon</p>
+          <div className="flex flex-col gap-3">
+
+            {/* ── VICCON Panel ── */}
+            <div className="rounded-2xl bg-[#0a1a6a]/70 px-4 py-3 ring-1 ring-white/10">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-black tracking-widest text-[#4adfff]">VICCON</p>
+                <button className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] font-black text-white/60 active:opacity-70">
+                  i
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-xl font-black text-white">{formatBalance(viccon)}</p>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => navigate('/viccon')}
+                  className="rounded-lg bg-gradient-to-b from-[#5adc5a] to-[#28a028] px-6 py-2 text-xs font-black tracking-wider text-white shadow shadow-green-900/50"
+                >
+                  PLAY
+                </motion.button>
+              </div>
+            </div>
+
+            {/* ── TICKET Section ── */}
+            <div className="rounded-2xl bg-[#0a1a6a]/70 px-4 py-4 ring-1 ring-white/10">
+              {/* Main Ticket Card */}
+              <div className="mb-3 flex justify-center">
+                <div className="relative w-[52%] overflow-hidden" style={{ aspectRatio: '208 / 337' }}>
+                  {/* Ticket frame */}
+                  <img
+                    src="/assets/images/account/earned/IMG_Ticket_Mini.png"
+                    alt="ticket"
+                    className="absolute inset-0 h-full w-full object-fill"
+                  />
+                  {/* Ticket content */}
+                  {ticketList[0] ? (
+                    <>
+                      {ticketList[0].imgUrl && (
+                        <div className="absolute inset-[8%] overflow-hidden rounded-lg">
+                          <img src={ticketList[0].imgUrl} alt={ticketList[0].ticketName} className="h-full w-full object-cover" />
+                        </div>
+                      )}
+                      {/* MIN / MAX label */}
+                      <div className="absolute bottom-[6%] left-[5%] right-[5%] flex items-center justify-center rounded-md bg-black/60 py-1">
+                        <p className="text-[9px] font-bold text-white">
+                          MIN {formatBalance(ticketList[0].value)} TO MAX {formatBalance(ticketList[0].value * 10)}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="absolute inset-[8%] flex items-center justify-center rounded-lg bg-[#06103a]/80">
+                      <img src="/assets/images/mission/icon_ticket.png" alt="" className="h-10 w-10 object-contain opacity-30" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Ticket Grid 3×2 */}
+              <div className="mb-3 grid grid-cols-3 gap-2">
+                {Array.from({ length: 6 }).map((_, i) => {
+                  const ticket = ticketList[i + 1];
+                  return (
+                    <div
+                      key={i}
+                      className="relative overflow-hidden"
+                      style={{ aspectRatio: '257 / 190' }}
+                    >
+                      {/* Background box */}
+                      <img
+                        src="/assets/images/account/earned/IMG_Miniticket_box.png"
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-fill"
+                      />
+
+                      {/* Ticket image - upper area, clipped */}
+                      {ticket && (
+                        <div className="absolute inset-x-[6%] top-[4%] overflow-hidden" style={{ bottom: '30%' }}>
+                          {ticket.imgUrl ? (
+                            <img
+                              src={ticket.imgUrl}
+                              alt={ticket.ticketName}
+                              className="h-full w-full object-cover object-center"
+                            />
+                          ) : (
+                            <img
+                              src="/assets/images/account/earned/IMG_Ticket_Mini.png"
+                              alt="ticket"
+                              className="h-full w-full object-cover object-top"
+                            />
+                          )}
+                        </div>
+                      )}
+
+                      {/* Bottom timebox strip */}
+                      <div className="absolute bottom-0 left-0 right-0" style={{ height: '32%' }}>
+                        <img
+                          src="/assets/images/account/earned/IMG_Miniticket_Timebox.png"
+                          alt=""
+                          className="h-full w-full object-fill"
+                        />
+                        {ticket && (
+                          <div className="absolute inset-0 flex items-center justify-center px-1">
+                            <p className="truncate text-center text-[8px] font-bold leading-tight text-white drop-shadow">
+                              {ticket.endDate ? ticket.endDate.slice(0, 10) : ticket.ticketName}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* History link */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => navigate('/history')}
+                  className="flex items-center gap-0.5 text-xs font-bold tracking-wider text-white/50 active:opacity-70"
+                >
+                  HISTORY <IconChevron />
+                </button>
+              </div>
+            </div>
+
+            {/* ── Bottom Stats Bar ── */}
+            <div className="overflow-hidden rounded-2xl bg-[#0a1a6a]/70 ring-1 ring-white/10">
+              <div className="flex divide-x divide-white/10">
+                {/* Tournament */}
+                <button
+                  onClick={() => navigate('/tournament')}
+                  className="flex flex-1 flex-col items-center gap-1 py-3 active:bg-white/5"
+                >
+                  <img src="/assets/images/account/earned/IMG_Notification_Tournament.png" alt="tournament" className="h-10 w-10 object-contain" />
+                  <p className="text-xs font-black text-white">
+                    {currentUser?.rankingData?.rank ?? 0}
+                  </p>
+                </button>
+                {/* Volt */}
+                <button
+                  onClick={() => navigate('/volt')}
+                  className="flex flex-1 flex-col items-center gap-1 py-3 active:bg-white/5"
+                >
+                  <img src="/assets/images/account/earned/IMG_Notification_Volt.png" alt="volt" className="h-10 w-10 object-contain" />
+                  <p className="text-xs font-black text-white">{voltTotal}</p>
+                </button>
+                {/* Mission */}
+                <button
+                  onClick={() => navigate('/mission')}
+                  className="flex flex-1 flex-col items-center gap-1 py-3 active:bg-white/5"
+                >
+                  <img src="/assets/images/account/earned/IMG_Notification_Dailymissions.png" alt="mission" className="h-10 w-10 object-contain" />
+                  <p className="text-xs font-black text-white">{missionCollected}/{missionTotal}</p>
+                </button>
+                {/* Housey / Bingo */}
+                <button
+                  onClick={() => navigate('/bingo')}
+                  className="flex flex-1 flex-col items-center gap-1 py-3 active:bg-white/5"
+                >
+                  <img src="/assets/images/account/earned/IMG_Notification_Housey.png" alt="housey" className="h-10 w-10 object-contain" />
+                  <p className="text-xs font-black text-white">{bingoCoin}</p>
+                </button>
+              </div>
+            </div>
+
           </div>
         )}
 
