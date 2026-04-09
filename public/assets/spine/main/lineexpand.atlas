@@ -1,0 +1,6 @@
+lineexpand.png
+size:20,20
+filter:Linear,Linear
+pma:true
+fillline
+bounds:2,2,16,16
