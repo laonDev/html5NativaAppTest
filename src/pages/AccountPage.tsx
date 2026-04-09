@@ -9,6 +9,7 @@ import { useTicketStore } from '@/stores/ticketStore';
 import { useMissionStore } from '@/stores/missionStore';
 import { useTournamentStore } from '@/stores/tournamentStore';
 import { accountApi } from '@/api/rest';
+import { AvatarEditModal } from '@/components/Modal/AvatarEditModal';
 
 // ── Tab type ──────────────────────────────────────────────────────────────────
 type Tab = 'profile' | 'earned';
@@ -135,6 +136,13 @@ export function AccountPage() {
   const [nickname, setNickname] = useState(userInfo?.nickname || '');
   const [editing, setEditing] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showAvatarEdit, setShowAvatarEdit] = useState(false);
+
+  const handleAvatarSaved = (profileUrl: string, nickname: string) => {
+    useAuthStore.getState().setUserInfo({ ...userInfo!, profileUrl, nickname });
+    setNickname(nickname);
+    setShowAvatarEdit(false);
+  };
 
   const handleSaveNickname = async () => {
     try {
@@ -200,6 +208,16 @@ export function AccountPage() {
         )}
       </AnimatePresence>
 
+      {/* ── Avatar Edit Modal ── */}
+      <AnimatePresence>
+        {showAvatarEdit && (
+          <AvatarEditModal
+            onClose={() => setShowAvatarEdit(false)}
+            onSaved={handleAvatarSaved}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-4 py-3.5">
         <button
@@ -261,7 +279,10 @@ export function AccountPage() {
                       <span className="text-3xl">👤</span>
                     )}
                   </div>
-                  <button className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#4a9fff] text-white shadow">
+                  <button
+                    onClick={() => setShowAvatarEdit(true)}
+                    className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#4a9fff] text-white shadow active:opacity-70"
+                  >
                     <IconEdit />
                   </button>
                 </div>

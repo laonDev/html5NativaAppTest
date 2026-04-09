@@ -62,7 +62,14 @@ if (USE_MOCK) {
         (response: any) => {
             const body = response.data;
             if (body?.error) {
-                return Promise.reject(body.error);
+                const err = body.error;
+                // action: 2 = 재로그인 필요 (expired_token 등)
+                if (err?.action === 2) {
+                    console.warn('[API] 세션 만료 — 로그인 페이지로 이동합니다.', err);
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                }
+                return Promise.reject(err);
             }
             return body?.content ?? body;
         },

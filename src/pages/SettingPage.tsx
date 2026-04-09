@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { accountApi } from '@/api/rest';
+import { AvatarEditModal } from '@/components/Modal/AvatarEditModal';
 
 // ── Sub-view type ────────────────────────────────────────────────────────────
-type View = 'main' | 'password' | 'profile';
+type View = 'main' | 'password';
 
 // ── Toggle Switch ────────────────────────────────────────────────────────────
 function ToggleSwitch({ on, onToggle }: { on: boolean; onToggle: () => void }) {
@@ -120,11 +121,8 @@ export function SettingPage() {
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState(false);
 
-  // ── Profile state ──
-  const [nickname, setNickname] = useState(userInfo?.nickname || '');
-  const [nicknameValid, setNicknameValid] = useState<boolean | null>(null);
-  const [nicknameChecking, setNicknameChecking] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(false);
+  // ── Avatar edit modal ──
+  const [showAvatarEdit, setShowAvatarEdit] = useState(false);
 
   // ── Delete account ──
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -151,35 +149,10 @@ export function SettingPage() {
     }
   }, [canUpdatePw, pwLoading, currentPw, newPw]);
 
-  const handleCheckNickname = useCallback(async (name: string) => {
-    if (name.length < 2 || name.length > 15 || !/^[a-zA-Z0-9]+$/.test(name)) {
-      setNicknameValid(false);
-      return;
-    }
-    setNicknameChecking(true);
-    try {
-      await accountApi.checkNicknameDuplication(name);
-      setNicknameValid(true);
-    } catch {
-      setNicknameValid(false);
-    } finally {
-      setNicknameChecking(false);
-    }
-  }, []);
-
-  const handleUpdateProfile = useCallback(async () => {
-    if (!nicknameValid || profileLoading) return;
-    setProfileLoading(true);
-    try {
-      await accountApi.changeNickname(nickname);
-      useAuthStore.getState().setUserInfo({ ...userInfo!, nickname });
-      setView('main');
-    } catch (err) {
-      console.error('Profile update error:', err);
-    } finally {
-      setProfileLoading(false);
-    }
-  }, [nicknameValid, profileLoading, nickname, userInfo]);
+  const handleAvatarSaved = (profileUrl: string, nickname: string) => {
+    useAuthStore.getState().setUserInfo({ ...userInfo!, profileUrl, nickname });
+    setShowAvatarEdit(false);
+  };
 
   const handleLogout = () => {
     logout();
@@ -266,109 +239,20 @@ export function SettingPage() {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // PROFILE VIEW
-  // ─────────────────────────────────────────────────────────────────────────
-  if (view === 'profile') {
-    return (
-      <div className="flex h-full flex-col bg-gradient-to-b from-[#050d35] to-[#030820]">
-        {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3.5">
-          <button onClick={() => setView('main')} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0a1a6a]/80 text-white ring-1 ring-white/20 active:opacity-70">
-            <IconBack />
-          </button>
-          <h2 className="flex-1 text-base font-bold italic text-white">Profile</h2>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-4 pb-6">
-          <div className="flex flex-col gap-4">
-
-            {/* Avatar */}
-            <div className="flex flex-col items-center gap-3 rounded-2xl bg-[#0a1a6a]/70 px-5 py-5 ring-1 ring-white/10">
-              <div className="relative">
-                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-[#0d2280] ring-2 ring-[#4a9fff]/60">
-                  {userInfo?.profileUrl ? (
-                    <img src={userInfo.profileUrl} alt="profile" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-4xl">👤</span>
-                  )}
-                </div>
-              </div>
-              <p className="text-xs text-white/40">Select Your Avatar</p>
-            </div>
-
-            {/* Username */}
-            <div>
-              <p className="mb-1.5 text-xs font-bold text-white/50">User Name</p>
-              <div className="flex items-center gap-2 rounded-xl bg-[#04092a] px-4 py-3 ring-1 ring-white/10">
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => {
-                    setNickname(e.target.value);
-                    setNicknameValid(null);
-                  }}
-                  onBlur={() => nickname.length >= 2 && handleCheckNickname(nickname)}
-                  maxLength={15}
-                  className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/25"
-                  placeholder="User Name"
-                />
-                {nicknameChecking && (
-                  <span className="text-xs text-white/30">...</span>
-                )}
-              </div>
-            </div>
-
-            {/* Validation */}
-            <div className="rounded-xl bg-[#0a1a6a]/50 px-4 py-3 ring-1 ring-white/8">
-              <p className="mb-2 text-xs font-bold text-white/60">Your User Name must contain:</p>
-              <div className="flex items-center gap-2 py-1">
-                <div className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] ${nickname.length >= 2 && nickname.length <= 15 ? 'bg-green-500 text-white' : 'bg-white/10 text-white/30'}`}>
-                  ✓
-                </div>
-                <p className={`text-xs ${nickname.length >= 2 && nickname.length <= 15 ? 'text-green-400' : 'text-white/40'}`}>
-                  At least 2, up to 15 characters
-                </p>
-              </div>
-              <div className="flex items-center gap-2 py-1">
-                <div className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] ${/^[a-zA-Z0-9]*$/.test(nickname) && nickname.length > 0 ? 'bg-green-500 text-white' : 'bg-white/10 text-white/30'}`}>
-                  ✓
-                </div>
-                <p className={`text-xs ${/^[a-zA-Z0-9]*$/.test(nickname) && nickname.length > 0 ? 'text-green-400' : 'text-white/40'}`}>
-                  English and Number
-                </p>
-              </div>
-              {nicknameValid === true && (
-                <p className="mt-1 text-xs text-green-400">✓ Valid User Name</p>
-              )}
-              {nicknameValid === false && nickname.length >= 2 && (
-                <p className="mt-1 text-xs text-red-400">✕ Invalid User Name</p>
-              )}
-            </div>
-
-            {/* Save button */}
-            <motion.button
-              whileTap={nicknameValid ? { scale: 0.97 } : undefined}
-              onClick={handleUpdateProfile}
-              disabled={!nicknameValid || profileLoading}
-              className={`rounded-xl py-3.5 text-sm font-black tracking-wider text-white ${
-                nicknameValid
-                  ? 'bg-gradient-to-b from-[#5adc5a] to-[#28a028] shadow shadow-green-900/50'
-                  : 'bg-white/10 text-white/30'
-              }`}
-            >
-              {profileLoading ? 'SAVING...' : 'SAVE'}
-            </motion.button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
   // MAIN SETTING VIEW
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="relative flex h-full flex-col bg-gradient-to-b from-[#050d35] to-[#030820]">
+
+      {/* ── Avatar Edit Modal ── */}
+      <AnimatePresence>
+        {showAvatarEdit && (
+          <AvatarEditModal
+            onClose={() => setShowAvatarEdit(false)}
+            onSaved={handleAvatarSaved}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ── Logout Confirm Popup ── */}
       <AnimatePresence>
@@ -467,7 +351,7 @@ export function SettingPage() {
 
             {/* Profile */}
             <button
-              onClick={() => setView('profile')}
+              onClick={() => setShowAvatarEdit(true)}
               className="flex w-full items-center gap-3 px-4 py-3 active:bg-white/5"
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#0d2280] ring-2 ring-[#4a9fff]/40">
