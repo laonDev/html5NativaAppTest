@@ -121,9 +121,10 @@ export function LobbyPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [homeScrollTop, setHomeScrollTop] = useState(0);
   const [listScrollTop, setListScrollTop] = useState(0);
-  const [viewportHeight, setViewportHeight] = useState(
-    typeof window !== 'undefined' ? window.innerHeight : 0,
-  );
+  const [viewportSize, setViewportSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+  });
   const listScrollRef = useRef<HTMLDivElement | null>(null);
   const filters = useMemo(() => parseFiltersFromSearch(searchParams), [searchParams]);
 
@@ -363,16 +364,20 @@ export function LobbyPage() {
   const isPromoEndCategory = activeCategory === 'promo' && activeSubCategory === 'the end';
   const showScrollTopAction = listScrollTop > 24;
   const homeUiScale = useMemo(() => {
-    if (!viewportHeight) return 1;
-    const scale = viewportHeight / 900;
+    if (!viewportSize.height) return 1;
+    const scale = viewportSize.height / 900;
     return Math.min(1, Math.max(HOME_UI_MIN_SCALE, scale));
-  }, [viewportHeight]);
+  }, [viewportSize.height]);
   const homePanelMaxWidth = Math.round(HOME_PANEL_MAX_WIDTH * homeUiScale);
   const homeBannerMaxWidth = Math.round(HOME_UI_MAX_WIDTH * homeUiScale);
-  const homeBannerMaxHeight = Math.round(BASE_HOME_BANNER_MAX_HEIGHT * homeUiScale);
-  const clampedHomeScroll = Math.max(0, Math.min(homeScrollTop, homeBannerMaxHeight));
-  const homeBannerHeight = Math.max(homeBannerMaxHeight - clampedHomeScroll, 0);
-  const showHomeBanner = clampedHomeScroll < homeBannerMaxHeight;
+  const homeBannerBaseWidth = Math.max(
+    320,
+    Math.min(homeBannerMaxWidth, Math.max(0, viewportSize.width - 20)),
+  );
+  const homeBannerBaseHeight = Math.round((homeBannerBaseWidth * 102) / 358);
+  const clampedHomeScroll = Math.max(0, Math.min(homeScrollTop, homeBannerBaseHeight));
+  const homeBannerHeight = Math.max(homeBannerBaseHeight - clampedHomeScroll, 0);
+  const showHomeBanner = clampedHomeScroll < homeBannerBaseHeight;
 
   const handleCategoryChange = useCallback((slug: string) => {
     setActiveCategory(slug);
@@ -387,7 +392,10 @@ export function LobbyPage() {
   }, [resetListScroll]);
 
   useEffect(() => {
-    const handleResize = () => setViewportHeight(window.innerHeight);
+    const handleResize = () => setViewportSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -417,12 +425,14 @@ export function LobbyPage() {
           style={{ height: `${homeBannerHeight}px`, visibility: showHomeBanner ? 'visible' : 'hidden' }}
         >
           <div className="flex h-full items-end justify-center">
-            <div style={{ width: `clamp(320px, calc(100% - 20px), ${homeBannerMaxWidth}px)` }}>
+            <div style={{ width: `clamp(320px, calc(100% - 0px), ${homeBannerMaxWidth}px)` }}>
               <BannerCarousel
                 key="banner-home"
                 items={banners}
                 className="w-full shrink-0"
-                itemAspectClass="aspect-[358/185]"
+                paddingClassName="px-0 pt-0"
+                rounded={false}
+                itemAspectClass="aspect-[358/102]"
               />
             </div>
           </div>

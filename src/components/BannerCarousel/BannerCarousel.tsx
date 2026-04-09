@@ -15,6 +15,8 @@ export interface BannerItem {
 interface BannerCarouselProps {
   items: BannerItem[];
   className?: string;
+  paddingClassName?: string;
+  rounded?: boolean;
   autoPlay?: boolean;
   autoPlayIntervalMs?: number;
   itemAspectClass?: string;
@@ -27,6 +29,8 @@ function joinClassName(...values: Array<string | false | undefined>) {
 export function BannerCarousel({
   items,
   className,
+  paddingClassName = 'px-3 pt-2',
+  rounded = true,
   autoPlay = BANNER_AUTOPLAY_ENABLED,
   autoPlayIntervalMs = BANNER_AUTOPLAY_INTERVAL_MS,
   itemAspectClass = 'aspect-[358/130]',
@@ -95,9 +99,12 @@ export function BannerCarousel({
   }
 
   return (
-    <section className={joinClassName('px-3 pt-2', className)}>
+    <section className={joinClassName(paddingClassName, className)}>
       <div
-        className="relative overflow-hidden rounded-xl border border-[#4153a0] bg-[#0e1d4f] shadow-[0_8px_20px_rgba(3,8,24,0.45)]"
+        className={joinClassName(
+          'relative overflow-hidden border border-[#4153a0] bg-[#0e1d4f] shadow-[0_8px_20px_rgba(3,8,24,0.45)]',
+          rounded && 'rounded-xl',
+        )}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={(event) => {
