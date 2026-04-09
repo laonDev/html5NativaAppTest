@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBalanceStore } from '@/stores/balanceStore';
 import { useTicketStore } from '@/stores/ticketStore';
+import { TICKET_TOTAL_COUNT } from '@/constants/ticket';
 
 function formatViccon(viccon: number) {
   return (viccon / 1000).toLocaleString(undefined, {
@@ -210,7 +211,7 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
                 }}
               >
                 <span ref={ticketTextRef} className="whitespace-nowrap">
-                  {ticketCount}
+                  {ticketCount}/{TICKET_TOTAL_COUNT}
                 </span>
               </span>
             </div>

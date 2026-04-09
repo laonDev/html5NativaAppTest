@@ -6,6 +6,7 @@ import { useTicketStore } from '@/stores/ticketStore';
 import { useVoltStore } from '@/stores/voltStore';
 import { useMissionStore } from '@/stores/missionStore';
 import { useTournamentStore } from '@/stores/tournamentStore';
+import { TICKET_TOTAL_COUNT } from '@/constants/ticket';
 type TabKey = 'profile' | 'earned';
 
 interface MyAccountPageProps {
@@ -44,7 +45,7 @@ export function MyAccountPage({ onClose }: MyAccountPageProps) {
 
   const ticketValues = useMemo(() => ticketList.map((t) => t.value), [ticketList]);
   const ticketValueRange = useMemo(() => getTicketValueRange(ticketValues), [ticketValues]);
-  const ticketItems = ticketList.slice(0, 6);
+  const ticketItems = ticketList.slice(0, TICKET_TOTAL_COUNT);
 
   const missionTotal = missions.length;
   const missionDone = missions.filter((m) => m.status >= 2 || m.minValue >= m.maxValue).length;
@@ -339,8 +340,8 @@ export function MyAccountPage({ onClose }: MyAccountPageProps) {
                   <img src="/assets/images/myaccount/Earned_ticket/mini_ticket_bg.png" alt="" className="h-full w-full" />
                 </div>
               ))}
-              {ticketItems.length < 6 &&
-                Array.from({ length: 6 - ticketItems.length }).map((_, idx) => (
+              {ticketItems.length < TICKET_TOTAL_COUNT &&
+                Array.from({ length: TICKET_TOTAL_COUNT - ticketItems.length }).map((_, idx) => (
                   <div key={`empty-${idx}`} className="relative h-16 w-full">
                     <img src="/assets/images/myaccount/Earned_ticket/mini_ticket_bg.png" alt="" className="h-full w-full opacity-60" />
                   </div>
