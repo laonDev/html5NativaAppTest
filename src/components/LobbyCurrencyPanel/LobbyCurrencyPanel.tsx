@@ -9,7 +9,11 @@ function formatViccon(viccon: number) {
   });
 }
 
-export function LobbyCurrencyPanel() {
+type LobbyCurrencyPanelProps = {
+  maxWidth?: number;
+};
+
+export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) {
   const navigate = useNavigate();
   const viccon = useBalanceStore((s) => s.viccon);
   const ticketCount = useTicketStore((s) => s.count);
@@ -18,7 +22,10 @@ export function LobbyCurrencyPanel() {
 
   return (
     <section className="flex justify-center">
-      <div className="w-full rounded-[14px]" style={{ width: 'calc(100% - 20px)' }}>
+      <div
+        className="w-full rounded-[14px]"
+        style={{ width: `clamp(320px, calc(100% - 20px), ${maxWidth}px)` }}
+      >
         <div
           className="relative block w-full overflow-hidden rounded-[14px] text-left"
           style={{ aspectRatio: '358 / 156' }}

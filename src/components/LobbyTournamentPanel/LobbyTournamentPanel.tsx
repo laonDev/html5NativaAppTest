@@ -1,7 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from '@/stores/tournamentStore';
 
-export function LobbyTournamentPanel() {
+type LobbyTournamentPanelProps = {
+  maxWidth?: number;
+};
+
+export function LobbyTournamentPanel({ maxWidth = 720 }: LobbyTournamentPanelProps) {
   const navigate = useNavigate();
   const currentUser = useTournamentStore((s) => s.currentUser);
   const rankingData = currentUser?.rankingData;
@@ -14,7 +18,7 @@ export function LobbyTournamentPanel() {
         type="button"
         onClick={() => navigate('/tournament')}
         className="relative block w-full overflow-hidden rounded-[14px] text-left"
-        style={{ width: 'calc(100% - 20px)', aspectRatio: '358 / 81' }}
+        style={{ width: `clamp(320px, calc(100% - 10px), ${maxWidth}px)`, aspectRatio: '358 / 81' }}
       >
         <img
           src="/assets/images/main_hud/tounerment_tab.png"

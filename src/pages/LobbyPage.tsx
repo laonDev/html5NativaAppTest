@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CategoryBar } from '@/components/CategoryBar/CategoryBar';
@@ -39,7 +39,10 @@ const FLOAT_ICON_FILTER = '/assets/images/main_hud/icon_filter.png';
 const PROVIDERS = ['DUG', 'PRAGMATIC', 'SUPRNATION', 'CASINO888'] as const;
 const JACKPOTS = ['MINI', 'MAJOR', 'MEGA'] as const;
 const VOLATILITY = ['LOW', 'MEDIUM', 'HIGH'] as const;
-const HOME_BANNER_MAX_HEIGHT = 185;
+const BASE_HOME_BANNER_MAX_HEIGHT = 185;
+const HOME_UI_MIN_SCALE = 0.75;
+const HOME_UI_MAX_WIDTH = 720;
+const HOME_PANEL_MAX_WIDTH = 500;
 const HOME_SECTION_ITEM_LIMIT = 24;
 const SLOT_CARD_WIDTH_STYLE = 'clamp(148px, calc((100vw - 44px) / 2.25), 186px)';
 
@@ -118,6 +121,9 @@ export function LobbyPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [homeScrollTop, setHomeScrollTop] = useState(0);
   const [listScrollTop, setListScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== 'undefined' ? window.innerHeight : 0,
+  );
   const listScrollRef = useRef<HTMLDivElement | null>(null);
   const filters = useMemo(() => parseFiltersFromSearch(searchParams), [searchParams]);
 
@@ -356,9 +362,17 @@ export function LobbyPage() {
   const isHome = activeCategory === 'home';
   const isPromoEndCategory = activeCategory === 'promo' && activeSubCategory === 'the end';
   const showScrollTopAction = listScrollTop > 24;
-  const clampedHomeScroll = Math.max(0, Math.min(homeScrollTop, HOME_BANNER_MAX_HEIGHT));
-  const homeBannerHeight = Math.max(HOME_BANNER_MAX_HEIGHT - clampedHomeScroll, 0);
-  const showHomeBanner = clampedHomeScroll < HOME_BANNER_MAX_HEIGHT;
+  const homeUiScale = useMemo(() => {
+    if (!viewportHeight) return 1;
+    const scale = viewportHeight / 900;
+    return Math.min(1, Math.max(HOME_UI_MIN_SCALE, scale));
+  }, [viewportHeight]);
+  const homePanelMaxWidth = Math.round(HOME_PANEL_MAX_WIDTH * homeUiScale);
+  const homeBannerMaxWidth = Math.round(HOME_UI_MAX_WIDTH * homeUiScale);
+  const homeBannerMaxHeight = Math.round(BASE_HOME_BANNER_MAX_HEIGHT * homeUiScale);
+  const clampedHomeScroll = Math.max(0, Math.min(homeScrollTop, homeBannerMaxHeight));
+  const homeBannerHeight = Math.max(homeBannerMaxHeight - clampedHomeScroll, 0);
+  const showHomeBanner = clampedHomeScroll < homeBannerMaxHeight;
 
   const handleCategoryChange = useCallback((slug: string) => {
     setActiveCategory(slug);
@@ -371,6 +385,13 @@ export function LobbyPage() {
     setActiveSubCategory(slug);
     resetListScroll();
   }, [resetListScroll]);
+
+  useEffect(() => {
+    const handleResize = () => setViewportHeight(window.innerHeight);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSearchSelectCategory = useCallback((category: 'home' | 'hot' | 'slot' | 'live' | 'promo' | 'mypick', subCategory?: string) => {
     setActiveCategory(category);
@@ -395,13 +416,15 @@ export function LobbyPage() {
           className="shrink-0 overflow-hidden"
           style={{ height: `${homeBannerHeight}px`, visibility: showHomeBanner ? 'visible' : 'hidden' }}
         >
-          <div className="flex h-full items-end">
-            <BannerCarousel
-              key="banner-home"
-              items={banners}
-              className="w-full shrink-0"
-              itemAspectClass="aspect-[358/185]"
-            />
+          <div className="flex h-full items-end justify-center">
+            <div style={{ width: `clamp(320px, calc(100% - 20px), ${homeBannerMaxWidth}px)` }}>
+              <BannerCarousel
+                key="banner-home"
+                items={banners}
+                className="w-full shrink-0"
+                itemAspectClass="aspect-[358/185]"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -492,12 +515,16 @@ export function LobbyPage() {
         {!isHome && <div className="h-[10px]" />}
 
         {!isHome && (
-          <BannerCarousel
-            key={`banner-${activeCategory}-${activeSubCategory || 'root'}`}
-            items={banners}
-            className="shrink-0"
-            itemAspectClass="aspect-[358/102]"
-          />
+          <div className="flex justify-center">
+            <div style={{ width: `clamp(320px, calc(100% - 20px), ${homeBannerMaxWidth}px)` }}>
+              <BannerCarousel
+                key={`banner-${activeCategory}-${activeSubCategory || 'root'}`}
+                items={banners}
+                className="shrink-0"
+                itemAspectClass="aspect-[358/102]"
+              />
+            </div>
+          </div>
         )}
 
         {!isHome && <div className="h-[10px]" />}
@@ -508,20 +535,20 @@ export function LobbyPage() {
           <div className="pb-4">
             <div className="h-[10px]" />
             <div className="ui-section-stack">
-            <LobbyCurrencyPanel />
-            <LobbyTournamentPanel />
-            {lobbySections.map((section) => (
-              <LobbySectionRow
-                key={section.key}
-                title={section.title}
-                games={section.items}
-                favorites={favorites}
-                isHotGame={(game) => hotGameIdSet.has(game['game-id'])}
-                onGameClick={handleGameClick}
-                onToggleFavorite={handleFavoriteToggle}
-                rows={2}
-              />
-            ))}
+              <LobbyCurrencyPanel maxWidth={homePanelMaxWidth} />
+              <LobbyTournamentPanel maxWidth={homePanelMaxWidth} />
+              {lobbySections.map((section) => (
+                <LobbySectionRow
+                  key={section.key}
+                  title={section.title}
+                  games={section.items}
+                  favorites={favorites}
+                  isHotGame={(game) => hotGameIdSet.has(game['game-id'])}
+                  onGameClick={handleGameClick}
+                  onToggleFavorite={handleFavoriteToggle}
+                  rows={2}
+                />
+              ))}
             </div>
           </div>
         ) : (
