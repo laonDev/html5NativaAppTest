@@ -7,11 +7,11 @@ bounds:191,77,122,126
 rotate:90
 eff_par
 bounds:319,44,73,74
-offsets:7,7,89,89
+offsets:1,1,74,75
 rotate:90
 eff_ring
 bounds:2,16,183,187
-offsets:8,8,203,203
+offsets:0,0,186,187
 rotate:90
 star_06
 bounds:191,2,72,73

@@ -4,7 +4,7 @@ filter:Linear,Linear
 pma:true
 eff_ring
 bounds:2,104,183,187
-offsets:8,8,203,203
+offsets:0,0,186,187
 rotate:90
 icon_volt
 bounds:191,144,143,143

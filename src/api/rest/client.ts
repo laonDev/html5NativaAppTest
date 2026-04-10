@@ -1,12 +1,18 @@
 import axios from 'axios';
 import { setupMockInterceptor } from '@/api/mock/mockInterceptor';
 
+// API 베이스 URL 설정 (환경 변수 우선, 로컬은 프록시 경로인 '/api' 사용)
 const API_BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || '/api';
-const USE_MOCK = !(import.meta as any).env.VITE_API_BASE_URL;
+
+/**
+ * [Phase 2] Feature Flag: 개발 환경 동적 스위칭
+ * - VITE_API_MOCKING 플래그 하나로 Mock 레이어와 실서버/프록시 레이어를 즉시 전환합니다.
+ * - Confluence에 보고된 단일화된 아키텍처 가이드라인을 준수합니다.
+ */
+const USE_MOCK = (import.meta as any).env.VITE_API_MOCKING === 'true';
 
 const APP_VERSION = '0.1.0';
-// OS_PLATFORM: NONE=0, PC=-1, EDITOR=-2, IOS=1, AOS=2
-const PLATFORM = -2;
+const PLATFORM = -2; // EDITOR 식별자
 
 const client = axios.create({
     baseURL: API_BASE_URL,
@@ -19,24 +25,26 @@ const client = axios.create({
     },
 });
 
-// --- [Phase 2 R&D] 토큰 갱신 시 Race Condition 방지용 대기 큐(Queue) ---
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+/**
+ * [Core Logic] 401 Token Refresh 비동기 대기열(Queue) 관리
+ * - 다중 API 호출 시 토큰이 만료되면 모든 요청이 개별적으로 Refresh를 호출하는 'Race Condition'을 방지합니다.
+ * - 첫 요청이 Refresh를 수행하는 동안(Lock), 나머지 요청은 Subscribers 배열에 담아 대기시킵니다.
+ */
+let isRefreshing = false; // 토큰 갱신 진행 여부를 제어하는 플래그
+let refreshSubscribers: ((token: string) => void)[] = []; // 새 토큰 발급 시 재발송될 요청들의 콜백 리스트
 
+// 갱신 성공 시 대기 중인 모든 요청에 새 토큰을 배포하고 큐를 비웁니다.
 const onRefreshed = (token: string) => {
     refreshSubscribers.forEach((callback) => callback(token));
-    refreshSubscribers = []; // 처리 후 큐 비우기
+    refreshSubscribers = [];
 };
 
+// 401 에러가 발생한 요청들을 큐에 등록합니다.
 const addRefreshSubscriber = (callback: (token: string) => void) => {
     refreshSubscribers.push(callback);
 };
-// ------------------------------------------------------------------------
 
-//  핵심 스위치: .env에 명시적으로 false라고 적지 않는 이상 무조건 우회(Mock) 작동
-const ENABLE_MOCK_API = (import.meta as any).env.VITE_ENABLE_MOCK_API === 'true';
-
-// [요청 인터셉터]
+// [Interceptor: Request] 전역 세션(Bearer Token) 자동 주입
 client.interceptors.request.use((config: any) => {
     const token = localStorage.getItem('token');
     if (token && config.headers) {
@@ -45,27 +53,34 @@ client.interceptors.request.use((config: any) => {
     return config;
 });
 
+// [Network Bridge] 런타임 환경에 따른 통신 레이어 분기 처리
 if (USE_MOCK) {
-    console.log('[API] Mock mode enabled — no VITE_API_BASE_URL set');
+    console.log('[API Core] Mock Mode Active: 로컬 가짜 데이터 레이어를 사용합니다.');
     setupMockInterceptor(client);
 } else {
+    // 실서버 인프라 정보 로그 (차주 소켓 연동 대비)
     console.log(
-        '[API] Real server mode\n',
+        '[API Core] Real API Mode Active\n',
         ' REST :', (import.meta as any).env.VITE_API_BASE_URL, '\n',
-        ' SUPR :', (import.meta as any).env.VITE_SUPR_API_BASE_URL ?? '(not set)', '\n',
-        ' Socket:', (import.meta as any).env.VITE_SOCKET_URL ?? '(not set)', '\n',
-        ' STOMP :', (import.meta as any).env.VITE_STOMP_URL ?? '(not set)',
+        ' SUPR :', (import.meta as any).env.VITE_SUPR_API_BASE_URL ?? '(not set)'
     );
 
-    // [응답 인터셉터]
+    // [Interceptor: Response] 비즈니스 에러 및 토큰 만료 핸들링
     client.interceptors.response.use(
         (response: any) => {
             const body = response.data;
             if (body?.error) {
                 const err = body.error;
-                // action: 2 = 재로그인 필요 (expired_token 등)
+
+                /**
+                 * [4/10 보완] action: 2 (세션 완전 만료) 예외 처리
+                 * - Refresh Token까지 만료되어 자동 복구가 불가능한 경우입니다.
+                 * - 진행 중인 대기열(Queue)을 즉시 파기하여 메모리 누수를 방지하고 세션을 강제 종료합니다.
+                 */
                 if (err?.action === 2) {
-                    console.warn('[API] 세션 만료 — 로그인 페이지로 이동합니다.', err);
+                    console.warn('[API Core] 세션 복구 불가(action:2). 전역 상태를 강제 초기화합니다.');
+                    isRefreshing = false;
+                    refreshSubscribers = [];
                     localStorage.removeItem('token');
                     window.location.href = '/login';
                 }
@@ -76,11 +91,11 @@ if (USE_MOCK) {
         async (error: any) => {
             const originalRequest = error.config;
 
-            // 401 에러이고, 아직 재시도를 하지 않은 패킷일 경우
+            // 401 Unauthorized 발생 시 세션 복구(Hydration) 시퀀스 진입
             if (error.response?.status === 401 && !originalRequest._retry) {
                 originalRequest._retry = true;
 
-                // 이미 누군가 갱신 중이라면 큐(Queue)에 들어가서 대기
+                // 이미 다른 요청에 의해 갱신이 진행 중이라면 큐에서 대기 (중복 호출 방지)
                 if (isRefreshing) {
                     return new Promise((resolve) => {
                         addRefreshSubscriber((newToken) => {
@@ -92,52 +107,33 @@ if (USE_MOCK) {
                     });
                 }
 
-                // 내가 최초의 401 패킷이라면 갱신 프로세스 시작
                 isRefreshing = true;
 
                 try {
-                    console.log('[API] 세션 만료. 안전한 토큰 갱신 시퀀스 진입...');
-                    let newToken = "";
+                    // [4/10 리팩토링] 하드코딩 제거: 순수 axios 인스턴스로 독립적인 갱신 API 호출
+                    const refreshResponse = await axios.post(`${API_BASE_URL}/account/refresh`, {});
+                    const newToken = refreshResponse.data?.token ?? refreshResponse.data?.accessToken;
 
-                    // 스위치가 켜져 있으면 우회 로직 실행
-                    if (ENABLE_MOCK_API) {
-                        console.log('[API] 개발 모드: 가짜 토큰으로 갱신을 시뮬레이션합니다.');
-                        newToken = "NEW_VALID_TOKEN_MOCK_" + Date.now();
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                    } else {
-                        console.log('[API] 운영 모드: 실제 서버에 토큰 갱신을 요청합니다.');
-
-                        // 중요: 여기서 client 인스턴스를 쓰면 401 무한 루프에 빠질 수 있으므로 순수 axios 사용
-                        const refreshResponse = await axios.post(`${API_BASE_URL}/account/refresh`, {
-                            // 필요 시 백엔드 스펙에 맞춰 refreshToken 파라미터 추가
-                            // refreshToken: localStorage.getItem('refreshToken') 
-                        });
-
-                        // 백엔드 응답 스펙에 맞춰 수정 (예: data.token 또는 data.accessToken)
-                        newToken = refreshResponse.data?.token ?? refreshResponse.data?.accessToken;
-                    }
-
-                    // 새 토큰 저장
                     localStorage.setItem('token', newToken);
-
-                    isRefreshing = false;
-                    onRefreshed(newToken); // 큐에 대기 중이던 애들한테 새 토큰 뿌리고 출발시킴
+                    isRefreshing = false; // Lock 해제
+                    onRefreshed(newToken); // 대기열 해제 및 재발송
 
                     if (originalRequest.headers) {
                         originalRequest.headers.Authorization = `Bearer ${newToken}`;
                     }
-                    return client(originalRequest); // 처음 실패했던 내 패킷 재발송
+                    return client(originalRequest);
 
                 } catch (refreshError) {
-                    // 리프레시마저 실패하면 완전 로그아웃
+                    // 갱신 실패 시 Fail-safe: 대기열 청소 및 강제 로그아웃
                     isRefreshing = false;
+                    refreshSubscribers = [];
                     localStorage.removeItem('token');
                     window.location.href = '/login';
                     return Promise.reject(refreshError);
                 }
             }
 
-            return Promise.reject(error.response?.data?.error ?? error.response?.data ?? error.message);
+            return Promise.reject(error.response?.data?.error ?? error.message);
         },
     );
 }

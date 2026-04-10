@@ -1,7 +1,0 @@
-eff_home.png
-size:190,135
-filter:Linear,Linear
-pma:true
-eff_home
-bounds:2,2,186,131
-offsets:2,13,190,146

@@ -66,9 +66,16 @@ export function SlotCardItem({ game, isFavorite, isHot = false, isEnd = false, o
           </div>
         )}
 
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={(event) => {
+            event.stopPropagation();
+            onToggleFavorite(game);
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
             event.stopPropagation();
             onToggleFavorite(game);
           }}
@@ -76,7 +83,7 @@ export function SlotCardItem({ game, isFavorite, isHot = false, isEnd = false, o
           aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
           {isFavorite ? '★' : '☆'}
-        </button>
+        </div>
       </div>
     </button>
   );

@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBalanceStore } from '@/stores/balanceStore';
 import { useTicketStore } from '@/stores/ticketStore';
 import { TICKET_TOTAL_COUNT } from '@/constants/ticket';
+import { AutoScaleTextBox } from '@/components/AutoScaleTextBox/AutoScaleTextBox';
+import SpineViewer from '@/components/CSpine/SpineViewer';
 
 function formatViccon(viccon: number) {
   return (viccon / 1000).toLocaleString(undefined, {
@@ -19,51 +21,15 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
   const navigate = useNavigate();
   const viccon = useBalanceStore((s) => s.viccon);
   const ticketCount = useTicketStore((s) => s.count);
-  const ticketGauge = useTicketStore((s) => s.gauge);
-  const ticketMaxGauge = useTicketStore((s) => s.maxGauge);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const vicconButtonRef = useRef<HTMLButtonElement | null>(null);
-  const vicconBoxRef = useRef<HTMLDivElement | null>(null);
-  const vicconTextRef = useRef<HTMLSpanElement | null>(null);
-  const ticketBoxRef = useRef<HTMLDivElement | null>(null);
-  const ticketTextRef = useRef<HTMLSpanElement | null>(null);
   const [scale, setScale] = useState(1);
   const [vicconBoxScale, setVicconBoxScale] = useState(1);
-  const [vicconTextScale, setVicconTextScale] = useState(1);
-  const [ticketScale, setTicketScale] = useState(1);
   const BASE_WIDTH = 358;
   const BASE_HEIGHT = 156;
   const VICCON_BASE_WIDTH = 587;
   const VICCON_BASE_HEIGHT = 183;
   const TICKET_BG_SCALE = 1.62;
-
-  const updateTextScales = useCallback(() => {
-    const vicconBox = vicconBoxRef.current;
-    const vicconText = vicconTextRef.current;
-    if (vicconBox && vicconText) {
-      const boxWidth = vicconBox.clientWidth;
-      const boxHeight = vicconBox.clientHeight;
-      const textWidth = vicconText.scrollWidth;
-      const textHeight = vicconText.scrollHeight;
-      if (boxWidth && boxHeight && textWidth && textHeight) {
-        const next = Math.min(1, boxWidth / textWidth, boxHeight / textHeight);
-        setVicconTextScale((prev) => (Math.abs(prev - next) < 0.01 ? prev : next));
-      }
-    }
-
-    const ticketBox = ticketBoxRef.current;
-    const ticketText = ticketTextRef.current;
-    if (ticketBox && ticketText) {
-      const boxWidth = ticketBox.clientWidth;
-      const boxHeight = ticketBox.clientHeight;
-      const textWidth = ticketText.scrollWidth;
-      const textHeight = ticketText.scrollHeight;
-      if (boxWidth && boxHeight && textWidth && textHeight) {
-        const next = Math.min(1, boxWidth / textWidth, boxHeight / textHeight);
-        setTicketScale((prev) => (Math.abs(prev - next) < 0.01 ? prev : next));
-      }
-    }
-  }, []);
 
   useEffect(() => {
     const target = containerRef.current;
@@ -73,7 +39,6 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
       const width = target.clientWidth;
       if (!width) return;
       setScale(width / BASE_WIDTH);
-      updateTextScales();
     };
 
     updateScale();
@@ -82,11 +47,7 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
     observer.observe(target);
 
     return () => observer.disconnect();
-  }, [updateTextScales]);
-
-  useEffect(() => {
-    updateTextScales();
-  }, [viccon, ticketCount, scale, vicconBoxScale, vicconTextScale, updateTextScales]);
+  }, []);
 
   useEffect(() => {
     const target = vicconButtonRef.current;
@@ -96,7 +57,6 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
       const width = target.clientWidth;
       if (!width) return;
       setVicconBoxScale(width / VICCON_BASE_WIDTH);
-      updateTextScales();
     };
 
     updateScale();
@@ -105,7 +65,7 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
     observer.observe(target);
 
     return () => observer.disconnect();
-  }, [updateTextScales]);
+  }, []);
 
   return (
     <section className="flex justify-center">
@@ -118,10 +78,20 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
           className="relative block w-full overflow-hidden rounded-[14px] text-left"
           style={{ aspectRatio: '358 / 156' }}
         >
+          <SpineViewer
+            spinePath="/assets/spine/main/banner_ticket.json"
+            animation="idle"
+            loop
+            useBoundsOffset
+            useBoundsScale
+            width={BASE_WIDTH}
+            height={BASE_HEIGHT}
+            className="pointer-events-none absolute inset-0 h-full w-full z-10"
+          />
           <img
             src="/assets/images/main_hud/ticket_tab.png"
             alt="Tickets"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover z-0 invisible"
           />
 
           <div className="absolute bottom-[1.2%] left-[0.4%] w-[58.5%]">
@@ -133,13 +103,23 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
               className="relative block w-full overflow-visible text-left"
               style={{ aspectRatio: '587 / 183' }}
             >
+              <SpineViewer
+                spinePath="/assets/spine/main/banner_viccon.json"
+                animation="idle"
+                loop
+                useBoundsOffset
+                useBoundsScale
+                width={VICCON_BASE_WIDTH}
+                height={VICCON_BASE_HEIGHT}
+                className="pointer-events-none absolute inset-0 h-full w-full z-10"
+              />
               <img
                 src="/assets/images/main_hud/viccon_tab.png"
                 alt="Viccon"
-                className="absolute inset-0 h-full w-full object-contain"
+                className="absolute inset-0 h-full w-full object-contain z-0 invisible"
               />
               <div
-                className="absolute left-0 top-0"
+                className="absolute left-0 top-0 z-20"
                 style={{
                   width: `${VICCON_BASE_WIDTH}px`,
                   height: `${VICCON_BASE_HEIGHT}px`,
@@ -147,36 +127,20 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
                   transform: `scale(${vicconBoxScale})`,
                 }}
               >
-                <div
-                  ref={vicconBoxRef}
+                <AutoScaleTextBox
+                  text={formatViccon(viccon)}
                   className="absolute z-10 flex items-center justify-end"
                   style={{ left: '130px', top: '95px', width: '220px', height: '50px', paddingRight: '0px' }}
-                >
-                  <span
-                    id="viccon-amount-text"
-                    className="whitespace-nowrap text-[35px] font-black tracking-[0.02em] text-[#ffffff] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'flex-end',
-                      transformOrigin: 'right center',
-                      transform: `scale(${vicconTextScale})`,
-                      zIndex: 2,
-                    }}
-                  >
-                    <span ref={vicconTextRef} className="whitespace-nowrap">
-                      {formatViccon(viccon)}
-                    </span>
-                  </span>
-                </div>
+                  textId="viccon-amount-text"
+                  textClassName="whitespace-nowrap text-[35px] font-black tracking-[0.02em] text-[#ffffff] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+                  align="right"
+                />
               </div>
             </button>
           </div>
 
           <div
-            className="pointer-events-none absolute left-0 top-0"
+            className="pointer-events-none absolute left-0 top-0 z-20"
             style={{
               width: `${BASE_WIDTH}px`,
               height: `${BASE_HEIGHT}px`,
@@ -185,7 +149,6 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
             }}
           >
             <div
-              ref={ticketBoxRef}
               className="absolute flex items-center justify-center bg-red-400/25"
               style={{ left: '298px', top: '119px', width: '40px', height: '22px' }}
             >
@@ -197,23 +160,14 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
                   transform: `translateX(2px) scale(${TICKET_BG_SCALE})`,
                 }}
               />
-              <span
-                id="ticket-count-text"
-                className="whitespace-nowrap text-[14px] font-black text-[#d6ecff]"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transformOrigin: 'center',
-                  transform: `translateY(-3px) scale(${ticketScale})`,
-                }}
-              >
-                <span ref={ticketTextRef} className="whitespace-nowrap">
-                  {ticketCount}/{TICKET_TOTAL_COUNT}
-                </span>
-              </span>
+              <AutoScaleTextBox
+                text={`${ticketCount}/${TICKET_TOTAL_COUNT}`}
+                className="absolute inset-0"
+                textId="ticket-count-text"
+                textClassName="whitespace-nowrap text-[14px] font-black text-[#d6ecff]"
+                align="center"
+                textTranslateY={-3}
+              />
             </div>
           </div>
 

@@ -1,9 +1,0 @@
-toucheff.png
-size:374,191
-filter:Linear,Linear
-pma:true
-eff_ring
-bounds:2,2,183,187
-offsets:8,8,203,203
-glow
-bounds:187,4,185,185

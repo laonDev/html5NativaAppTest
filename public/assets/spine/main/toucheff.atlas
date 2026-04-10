@@ -4,6 +4,6 @@ filter:Linear,Linear
 pma:true
 eff_ring
 bounds:2,2,183,187
-offsets:8,8,203,203
+offsets:0,0,186,187
 glow
 bounds:187,4,185,185
