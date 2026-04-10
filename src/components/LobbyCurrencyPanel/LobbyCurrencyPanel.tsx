@@ -4,6 +4,7 @@ import { useBalanceStore } from '@/stores/balanceStore';
 import { useTicketStore } from '@/stores/ticketStore';
 import { TICKET_TOTAL_COUNT } from '@/constants/ticket';
 import { AutoScaleTextBox } from '@/components/AutoScaleTextBox/AutoScaleTextBox';
+import SpineViewer from '@/components/CSpine/SpineViewer';
 
 function formatViccon(viccon: number) {
   return (viccon / 1000).toLocaleString(undefined, {
@@ -77,10 +78,20 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
           className="relative block w-full overflow-hidden rounded-[14px] text-left"
           style={{ aspectRatio: '358 / 156' }}
         >
+          <SpineViewer
+            spinePath="/assets/spine/main/banner_ticket.json"
+            animation="idle"
+            loop
+            useBoundsOffset
+            useBoundsScale
+            width={BASE_WIDTH}
+            height={BASE_HEIGHT}
+            className="pointer-events-none absolute inset-0 h-full w-full z-10"
+          />
           <img
             src="/assets/images/main_hud/ticket_tab.png"
             alt="Tickets"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover z-0 invisible"
           />
 
           <div className="absolute bottom-[1.2%] left-[0.4%] w-[58.5%]">
@@ -92,13 +103,23 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
               className="relative block w-full overflow-visible text-left"
               style={{ aspectRatio: '587 / 183' }}
             >
+              <SpineViewer
+                spinePath="/assets/spine/main/banner_viccon.json"
+                animation="idle"
+                loop
+                useBoundsOffset
+                useBoundsScale
+                width={VICCON_BASE_WIDTH}
+                height={VICCON_BASE_HEIGHT}
+                className="pointer-events-none absolute inset-0 h-full w-full z-10"
+              />
               <img
                 src="/assets/images/main_hud/viccon_tab.png"
                 alt="Viccon"
-                className="absolute inset-0 h-full w-full object-contain"
+                className="absolute inset-0 h-full w-full object-contain z-0 invisible"
               />
               <div
-                className="absolute left-0 top-0"
+                className="absolute left-0 top-0 z-20"
                 style={{
                   width: `${VICCON_BASE_WIDTH}px`,
                   height: `${VICCON_BASE_HEIGHT}px`,
@@ -119,7 +140,7 @@ export function LobbyCurrencyPanel({ maxWidth = 720 }: LobbyCurrencyPanelProps) 
           </div>
 
           <div
-            className="pointer-events-none absolute left-0 top-0"
+            className="pointer-events-none absolute left-0 top-0 z-20"
             style={{
               width: `${BASE_WIDTH}px`,
               height: `${BASE_HEIGHT}px`,

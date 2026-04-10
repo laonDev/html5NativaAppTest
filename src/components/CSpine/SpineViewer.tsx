@@ -76,6 +76,10 @@ export interface SpineViewerProps {
   backgroundAlpha?: number
 
   autoCenter?: boolean
+  useBoundsOffset?: boolean
+  useBoundsScale?: boolean
+  useAttachmentBounds?: boolean
+  boundsAttachmentName?: string
   autoFit?: boolean
   fitRatio?: number
 
@@ -96,6 +100,10 @@ export default function SpineViewer({
   height = 600,
   backgroundAlpha = 0,
   autoCenter = true,
+  useBoundsOffset = false,
+  useBoundsScale = false,
+  useAttachmentBounds = false,
+  boundsAttachmentName = 'bg_frame',
   autoFit = false,
   fitRatio = 0.8,
   debug = false,
@@ -106,6 +114,36 @@ export default function SpineViewer({
   const appRef = useRef<Application | null>(null)
   const controllerRef = useRef<SpineController | null>(null)
   
+  const getAttachmentBounds = (spine: Spine, attachmentName: string) => {
+    const skeletonData: any = spine.skeleton.data
+    const skin = skeletonData.findSkin?.('default') ?? skeletonData.skins?.[0]
+    if (!skin) return null
+    const attachments: any = (skin as any).attachments
+    if (!attachments) return null
+
+    const getFromSlotMap = (slotMap: any) => {
+      if (!slotMap) return null
+      if (slotMap.get && slotMap.has) {
+        return slotMap.get(attachmentName) ?? null
+      }
+      return slotMap[attachmentName] ?? null
+    }
+
+    if (attachments instanceof Map) {
+      for (const slotMap of attachments.values()) {
+        const att = getFromSlotMap(slotMap)
+        if (att) return att
+      }
+    } else if (typeof attachments === 'object') {
+      for (const key of Object.keys(attachments)) {
+        const att = getFromSlotMap(attachments[key])
+        if (att) return att
+      }
+    }
+
+    return null
+  }
+
   const applyAutoLayout = (
     controller: SpineController,
     app: Application,
@@ -114,7 +152,35 @@ export default function SpineViewer({
 
     let finalScale = scale
 
-    if (autoFit) {
+    const dataBounds = {
+      x: spine.skeleton.data.x ?? 0,
+      y: spine.skeleton.data.y ?? 0,
+      width: spine.skeleton.data.width ?? 0,
+      height: spine.skeleton.data.height ?? 0,
+    }
+    const attachment = useAttachmentBounds ? getAttachmentBounds(spine, boundsAttachmentName) : null
+    const attachmentBounds = attachment
+      ? {
+          x: attachment.x ?? 0,
+          y: attachment.y ?? 0,
+          width: attachment.width ?? 0,
+          height: attachment.height ?? 0,
+        }
+      : null
+    const resolvedBounds =
+      attachmentBounds && attachmentBounds.width > 0 && attachmentBounds.height > 0
+        ? attachmentBounds
+        : dataBounds.width > 0 && dataBounds.height > 0
+          ? dataBounds
+          : spine.getLocalBounds()
+
+    if (useBoundsScale) {
+      if (resolvedBounds.width > 0 && resolvedBounds.height > 0) {
+        const scaleX = app.screen.width / resolvedBounds.width
+        const scaleY = app.screen.height / resolvedBounds.height
+        finalScale = Math.min(scaleX, scaleY)
+      }
+    } else if (autoFit) {
       const rawBounds = spine.getLocalBounds()
 
       if (rawBounds.width > 0 && rawBounds.height > 0) {
@@ -129,6 +195,24 @@ export default function SpineViewer({
     }
 
     controller.setScale(finalScale)
+
+    if (useBoundsOffset) {
+      const offsetX = -resolvedBounds.x * finalScale
+      const offsetY = -resolvedBounds.y * finalScale
+      if (debug) {
+        const source =
+          resolvedBounds === attachmentBounds
+            ? `attachment:${boundsAttachmentName}`
+            : resolvedBounds === dataBounds
+              ? 'skeleton.data'
+              : 'localBounds'
+        console.log('[SpineViewer] bounds source:', source)
+        console.log('[SpineViewer] bounds:', resolvedBounds)
+        console.log('[SpineViewer] bounds offset:', { offsetX, offsetY, scale: finalScale })
+      }
+      controller.setPosition(offsetX, offsetY)
+      return
+    }
 
     if (autoCenter) {
       const bounds = spine.getLocalBounds()
@@ -279,7 +363,18 @@ app.canvas.style.display = 'block'
     if (!controller || !app) return
 
     applyAutoLayout(controller, app)
-  }, [x, y, scale, autoCenter, autoFit, fitRatio])
+  }, [
+    x,
+    y,
+    scale,
+    autoCenter,
+    useBoundsOffset,
+    useBoundsScale,
+    useAttachmentBounds,
+    boundsAttachmentName,
+    autoFit,
+    fitRatio,
+  ])
 
   return <div ref={containerRef} className={className} />
 }

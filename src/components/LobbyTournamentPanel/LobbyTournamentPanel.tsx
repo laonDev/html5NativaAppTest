@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from '@/stores/tournamentStore';
 import { AutoScaleTextBox } from '@/components/AutoScaleTextBox/AutoScaleTextBox';
+import SpineViewer from '@/components/CSpine/SpineViewer';
 
 type LobbyTournamentPanelProps = {
   maxWidth?: number;
@@ -45,10 +46,20 @@ export function LobbyTournamentPanel({ maxWidth = 720 }: LobbyTournamentPanelPro
         className="relative block w-full overflow-hidden rounded-[14px] text-left"
         style={{ width: `clamp(320px, calc(100% - 10px), ${maxWidth}px)`, aspectRatio: '358 / 81' }}
       >
+        <SpineViewer
+          spinePath="/assets/spine/main/banner_tournament.json"
+          animation="loop_rank"
+          loop
+          useBoundsOffset
+          useBoundsScale
+          width={BASE_WIDTH}
+          height={BASE_HEIGHT}
+          className="absolute inset-0 h-full w-full object-cover z-10"
+        />
         <img
           src="/assets/images/main_hud/tounerment_tab.png"
           alt="Tournament"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover z-0"
         />
 
         <div
