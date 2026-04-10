@@ -4,280 +4,296 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { missionApi } from '@/api/rest';
 import { mockDailyMissions } from '@/api/mock/mockData';
 import { useMissionStore } from '@/stores/missionStore';
-import { MISSION_STATUS, MISSION_TYPES } from '@/types';
+import { MISSION_STATUS } from '@/types';
 import type { DailyMissionInfo } from '@/types';
 
-// ── Countdown helper ──────────────────────────────────────────────────────────
-function useCountdownParts(endTime: string | null) {
-  const [parts, setParts] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+const M = '/assets/images/mission';
 
-  useEffect(() => {
-    if (!endTime) return;
-    const update = () => {
-      const diff = Math.max(0, new Date(endTime).getTime() - Date.now());
-      setParts({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
-      });
-    };
-    update();
-    const id = setInterval(update, 1000);
-    return () => clearInterval(id);
-  }, [endTime]);
-
-  return parts;
-}
-
-// ── Mission type → icon mapping ───────────────────────────────────────────────
-const MISSION_ICONS: Record<number, string> = {
-  1: '/assets/images/mission/icon_slot.png',
-  2: '/assets/images/mission/icon_bingo.png',
-  3: '/assets/images/mission/icon_viccon.png',
-  4: '/assets/images/mission/icon_volt.png',
-  5: '/assets/images/mission/icon_crash.png',
-  6: '/assets/images/mission/icon_ticket.png',
-  7: '/assets/images/mission/icon_tournament.png',
-  8: '/assets/images/mission/icon_friend.png',
+// Mission type → goods icon
+const GOODS_ICON: Record<number, string> = {
+  1: `${M}/dm_btn_goods_03.png`,
+  2: `${M}/dm_btn_goods_02.png`,
+  3: `${M}/dm_btn_goods_04.png`,
+  4: `${M}/dm_btn_goods_05.png`,
+  5: `${M}/dm_btn_goods_03.png`,
+  6: `${M}/dm_btn_goods_02.png`,
+  7: `${M}/dm_btn_goods_04.png`,
+  8: `${M}/dm_btn_goods_05.png`,
 };
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Countdown ─────────────────────────────────────────────────────────────────
+function useCountdownParts(endTime: string | null) {
+  const [p, setP] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  useEffect(() => {
+    if (!endTime) return;
+    const tick = () => {
+      const d = Math.max(0, new Date(endTime).getTime() - Date.now());
+      setP({
+        days:    Math.floor(d / 86400000),
+        hours:   Math.floor((d % 86400000) / 3600000),
+        minutes: Math.floor((d % 3600000)  / 60000),
+        seconds: Math.floor((d % 60000)    / 1000),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [endTime]);
+  return p;
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 export function DailyMissionPage() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const navigate   = useNavigate();
+  const [loading,    setLoading]    = useState(true);
   const [collecting, setCollecting] = useState<number | null>(null);
 
-  const missions = useMissionStore((s) => s.missions);
-  const endDate = useMissionStore((s) => s.endDate);
+  const missions      = useMissionStore((s) => s.missions);
+  const endDate       = useMissionStore((s) => s.endDate);
   const overallStatus = useMissionStore((s) => s.overallStatus);
-  const setMissions = useMissionStore((s) => s.setMissions);
+  const setMissions   = useMissionStore((s) => s.setMissions);
   const { days, hours, minutes, seconds } = useCountdownParts(endDate);
 
-  useEffect(() => {
-    loadMissions();
-  }, []);
+  useEffect(() => { load(); }, []);
 
-  const loadMissions = async () => {
+  const load = async () => {
     try {
       const res = await missionApi.list();
       setMissions(res.dailyMissionInfos, res.endDate, res.status);
-    } catch (err) {
-      console.warn('Mission list error, falling back to mock:', err);
-      const mock = mockDailyMissions;
-      if (mock) {
-        setMissions(mock.dailyMissionInfos, mock.endDate, mock.status);
-      }
-    } finally {
-      setLoading(false);
-    }
+    } catch {
+      const m = mockDailyMissions;
+      if (m) setMissions(m.dailyMissionInfos, m.endDate, m.status);
+    } finally { setLoading(false); }
   };
 
-  const handleCollect = async (missionIndex: number) => {
-    setCollecting(missionIndex);
-    try {
-      await missionApi.collect(missionIndex);
-      await loadMissions();
-    } catch (err) {
-      console.error('Collect error:', err);
-    } finally {
-      setCollecting(null);
-    }
+  const handleCollect = async (idx: number) => {
+    setCollecting(idx);
+    try { await missionApi.collect(idx); await load(); }
+    catch (e) { console.error(e); }
+    finally { setCollecting(null); }
   };
 
   const handleComplete = async () => {
     setCollecting(-2);
-    try {
-      await missionApi.complete();
-      await loadMissions();
-    } catch (err) {
-      console.error('Complete error:', err);
-    } finally {
-      setCollecting(null);
-    }
+    try { await missionApi.complete(); await load(); }
+    catch (e) { console.error(e); }
+    finally { setCollecting(null); }
   };
 
   const collectedCount = missions.filter((m) => m.status === MISSION_STATUS.COLLECTED).length;
-  const allCollected = collectedCount === missions.length && missions.length > 0;
+  const allCollected   = collectedCount === missions.length && missions.length > 0;
+  const gaugePercent   = missions.length > 0 ? (collectedCount / missions.length) * 100 : 0;
+  const totalHours     = hours + days * 24;
+  const allDone        = overallStatus === 3;
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center bg-[#080620]">
+      <div className="flex h-full items-center justify-center" style={{ background: '#060520' }}>
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#00c8ff] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto bg-[#080620]">
+    <div className="relative h-full overflow-y-auto overflow-x-hidden" style={{ background: '#060520' }}>
 
-      {/* ── 1. Title Banner with decorative gems ── */}
-      <div className="relative overflow-hidden">
-        <img
-          src="/assets/images/mission/banner_title.png"
-          alt=""
-          className="h-44 w-full object-cover"
-        />
-        {/* Decorative gems */}
-        <img src="/assets/images/mission/gem_yellow.png" alt="" className="absolute left-[12%] top-[18%] h-10 w-10 drop-shadow-[0_0_8px_rgba(255,210,40,0.6)]" />
-        <img src="/assets/images/mission/gem_blue.png" alt="" className="absolute right-[18%] top-[12%] h-8 w-8 drop-shadow-[0_0_8px_rgba(50,140,255,0.6)]" />
-        <img src="/assets/images/mission/gem_pink.png" alt="" className="absolute right-[8%] top-[35%] h-9 w-9 drop-shadow-[0_0_8px_rgba(230,80,200,0.6)]" />
-        <img src="/assets/images/mission/gem_green.png" alt="" className="absolute right-[25%] bottom-[25%] h-7 w-7 drop-shadow-[0_0_8px_rgba(50,220,100,0.6)]" />
-        {/* Title text overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-black tracking-wider text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-            AREA
-          </span>
-          <span className="text-xl font-black tracking-widest text-[#ffd700] drop-shadow-[0_2px_6px_rgba(255,180,0,0.5)]">
-            FIFTY-FUN
-          </span>
-        </div>
-        {/* Bottom gradient */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#080620] to-transparent" />
+      {/* ── BACKGROUND ────────────────────────────────────────────────────── */}
+      <img
+        src={`${M}/dm_bg.jpg`} alt=""
+        className="pointer-events-none fixed inset-0 h-full w-full object-cover object-top"
+        style={{ zIndex: 0 }}
+      />
+
+      {/* ── TITLE GLOW LAYER ─────────────────────────────────────────────── */}
+      <div className="pointer-events-none absolute left-0 right-0 top-0" style={{ zIndex: 1, height: '28vw' }}>
+        <img src={`${M}/dm_title_ef.png`} alt=""
+          className="absolute inset-0 h-full w-full object-fill" />
       </div>
 
-      {/* ── 2. Daily Mission Status panel ── */}
-      <div className="relative mx-3 -mt-4 rounded-2xl bg-gradient-to-b from-[#0a1848] to-[#060d2e] p-4 ring-1 ring-[#1a3a8a]/60 shadow-lg shadow-blue-900/30">
-        {/* Cyan accent line at top */}
-        <div className="absolute inset-x-4 top-0 h-[2px] rounded-full bg-gradient-to-r from-transparent via-[#00c8ff] to-transparent" />
+      {/* ── SCROLLABLE CONTENT ───────────────────────────────────────────── */}
+      <div className="relative flex flex-col pb-4" style={{ zIndex: 2 }}>
 
-        {/* Label */}
-        <h2 className="text-center text-sm font-bold tracking-wide text-white">Daily Mission Status</h2>
+        {/* ── HEADER BUTTONS + TITLE (fixed top area) ─────────────────── */}
+        <div className="relative flex items-center justify-between px-3 pt-3 pb-0">
+          <button className="h-10 w-10 p-0.5">
+            <img src={`${M}/dm_icon_info.png`} alt="Info" className="h-full w-full object-contain" />
+          </button>
 
-        {/* Checkmark indicators row */}
-        <div className="mt-3 flex items-center justify-center gap-3">
-          {missions.map((m) => (
-            <div
-              key={m.missionIndex}
-              className={`flex h-10 w-10 items-center justify-center rounded-lg border-2 shadow-inner ${
-                m.status === MISSION_STATUS.COLLECTED
-                  ? 'border-green-400/60 bg-green-900/40 shadow-green-900/50'
-                  : m.status === MISSION_STATUS.ACHIEVED
-                  ? 'border-yellow-400/60 bg-yellow-900/30 shadow-yellow-900/50'
-                  : 'border-gray-600/40 bg-[#0a0e24] shadow-black/50'
-              }`}
-            >
-              {m.status === MISSION_STATUS.COLLECTED ? (
-                <svg viewBox="0 0 16 16" className="h-5 w-5 text-green-400 drop-shadow-[0_0_4px_rgba(74,222,128,0.6)]" fill="currentColor">
-                  <path d="M13.485 3.515a.75.75 0 010 1.06l-7 7a.75.75 0 01-1.06 0l-3.5-3.5a.75.75 0 011.06-1.06L6 9.94l6.47-6.47a.75.75 0 011.06 0z" />
-                </svg>
-              ) : m.status === MISSION_STATUS.ACHIEVED ? (
-                <span className="text-base font-bold text-yellow-400">!</span>
-              ) : (
-                <span className="h-2 w-2 rounded-full bg-gray-700" />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Progress bar with Volt reward icon */}
-        <div className="mt-3 flex items-center gap-2">
-          <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#0a0e24] ring-1 ring-white/10">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-green-500 via-lime-400 to-yellow-400 transition-all duration-500"
-              style={{ width: `${missions.length > 0 ? (collectedCount / missions.length) * 100 : 0}%` }}
-            />
+          {/* TITLE centered between buttons */}
+          <div className="pointer-events-none absolute left-0 right-0 flex justify-center">
+            <img src={`${M}/dm_title.png`} alt="Daily Mission"
+              style={{ width: '55%', objectFit: 'contain' }} />
           </div>
-          <img
-            src="/assets/images/mission/volt_reward.png"
-            alt="Volt reward"
-            className="h-9 w-9 drop-shadow-[0_0_6px_rgba(255,200,40,0.5)]"
-          />
+
+          <button className="h-10 w-10 p-0.5" onClick={() => navigate(-1)}>
+            <img src={`${M}/dm_icon_close.png`} alt="Close" className="h-full w-full object-contain" />
+          </button>
         </div>
 
-        {/* Description */}
-        <p className="mt-2.5 text-center text-[11px] leading-relaxed text-gray-400">
-          If you have completed all missions, you can earn<br />Volt rewards for free!
-        </p>
+        {/* ── STATUS PANEL ─────────────────────────────────────────────── */}
+        {/* dm_top.png is 1093×680, aspect ratio ≈ 1.607 */}
+        <div className="relative mx-3">
+          <img src={`${M}/dm_top.png`} alt="" className="w-full" style={{ display: 'block' }} />
 
-        {/* Countdown / COLLECT / ALL DONE */}
-        <div className="mt-3">
-          {overallStatus === 3 ? (
-            /* ── ALL DONE! ── */
-            <div className="flex items-center justify-center gap-2 rounded-full bg-white/5 py-2 px-6 mx-auto w-fit ring-1 ring-white/15">
-              <svg viewBox="0 0 16 16" className="h-4 w-4 text-green-400" fill="currentColor">
-                <path d="M13.485 3.515a.75.75 0 010 1.06l-7 7a.75.75 0 01-1.06 0l-3.5-3.5a.75.75 0 011.06-1.06L6 9.94l6.47-6.47a.75.75 0 011.06 0z" />
-              </svg>
-              <span className="text-sm font-black tracking-widest text-green-400">ALL DONE!</span>
+          {/* Overlay — positions are % of dm_top.png (1093×680) */}
+          <div className="absolute inset-0">
+
+            {/* Status label bar: dm_status_bg 이미지에 텍스트 포함됨 */}
+            <div className="absolute overflow-hidden"
+              style={{ top: '3%', left: '3%', right: '3%', height: '11%' }}>
+              <img src={`${M}/dm_status_bg.png`} alt=""
+                className="absolute inset-0 h-full w-full object-fill" />
             </div>
-          ) : allCollected ? (
-            /* ── COLLECT 버튼 (올 클리어 볼트 보상 수령) ── */
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={handleComplete}
-              disabled={collecting === -2}
-              className="mx-auto flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-400 py-2.5 font-black tracking-widest text-white shadow-lg shadow-green-900/50 disabled:opacity-50"
-            >
-              {collecting === -2 ? (
-                <span className="text-sm">Collecting…</span>
-              ) : (
-                <>
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-                    <path d="M13 2L4.5 13.5H11L9 22l10.5-12H14L13 2z" />
-                  </svg>
-                  <span className="text-sm">COLLECT</span>
-                </>
+
+            {/* coin_goods background image (covers most of inner area) */}
+            <div className="pointer-events-none absolute"
+              style={{ top: '14%', left: '3.8%', right: '3.8%', bottom: '2%' }}>
+              <img src={`${M}/dm_coin_goods.png`} alt=""
+                className="h-full w-full object-fill" />
+            </div>
+
+            {/* Check-box row: left=233/1093 to right side, top=209/680 */}
+            <div className="absolute flex items-center justify-center"
+              style={{ top: '30.7%', left: '20%', right: '22%' }}>
+              {missions.map((m) => {
+                const done  = m.status === MISSION_STATUS.COLLECTED;
+                const ready = m.status === MISSION_STATUS.ACHIEVED;
+                return (
+                  <div key={m.missionIndex}
+                    className="relative flex flex-1 items-center justify-center"
+                    style={{ aspectRatio: '1 / 1.15' }}>
+                    <img src={`${M}/dm_check_small.png`} alt=""
+                      className="absolute inset-0 h-full w-full object-contain"
+                      style={{
+                        filter: done  ? 'drop-shadow(0 0 5px rgba(0,255,120,0.9))'
+                              : ready ? 'drop-shadow(0 0 5px rgba(255,220,0,0.9))'
+                              : 'brightness(0.5)',
+                      }} />
+                    {done && (
+                      <img src={`${M}/dm_check_mini.png`} alt=""
+                        className="relative z-10 object-contain" style={{ width: '50%' }} />
+                    )}
+                    {ready && (
+                      <span className="relative z-10 text-[14px] font-black"
+                        style={{ color: '#ffe040', textShadow: '0 0 6px rgba(255,200,0,0.9)' }}>!</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Gauge track: left=111/1093, top=304/680, w=813/1093, h=90/680 */}
+            <div className="absolute"
+              style={{ top: '44.7%', left: '10.2%', right: '22%', height: '13.2%' }}>
+              <div className="relative h-full overflow-hidden">
+                <img src={`${M}/dm_gauge_mask.png`} alt=""
+                  className="absolute inset-0 h-full w-full object-fill" />
+                {gaugePercent > 0 && (
+                  <div className="absolute inset-y-0 left-0 overflow-hidden transition-all duration-700"
+                    style={{ width: `${gaugePercent}%` }}>
+                    <img src={`${M}/dm_gauge_green.png`} alt=""
+                      className="h-full w-full object-fill" />
+                  </div>
+                )}
+                {missions.length > 1 && missions.slice(0, -1).map((_, i) => (
+                  <img key={i} src={`${M}/dm_gauge_section.png`} alt=""
+                    className="pointer-events-none absolute top-0 h-full w-auto"
+                    style={{ left: `${((i + 1) / missions.length) * 100}%`, transform: 'translateX(-50%)' }} />
+                ))}
+              </div>
+            </div>
+
+            {/* Right reward circle: left=790/1093, top=206/680, w=192/1093, h=192/680 */}
+            <div className="absolute flex items-center justify-center"
+              style={{ top: '30.3%', left: '72.3%', width: '17.6%', aspectRatio: '1' }}>
+              <img src={`${M}/dm_bg_status_circle.png`} alt=""
+                className="absolute inset-0 h-full w-full object-contain" />
+              <img src={`${M}/dm_btn_goods_05.png`} alt=""
+                className="relative z-10 object-contain"
+                style={{
+                  width: '75%',
+                  filter: allCollected
+                    ? 'drop-shadow(0 0 8px rgba(255,200,40,1)) brightness(1.2)'
+                    : 'brightness(0.3) grayscale(0.5)',
+                }} />
+              {(allDone || allCollected) && (
+                <img src={`${M}/dm_check_big.png`} alt=""
+                  className="absolute z-20 object-contain"
+                  style={{ width: '80%', top: '-15%' }} />
               )}
-            </motion.button>
+            </div>
+
+            {/* Collect / All Done button area: centered, bottom area */}
+            <div className="absolute flex items-center justify-center"
+              style={{ top: '51.8%', left: '22%', width: '45%', height: '30%' }}>
+              {allDone ? (
+                <div className="flex items-center gap-1.5 rounded-full px-3 py-1"
+                  style={{ background: 'rgba(0,200,80,0.15)', border: '1px solid rgba(0,200,80,0.4)' }}>
+                  <img src={`${M}/dm_check.png`} alt="" style={{ width: 14, objectFit: 'contain' }} />
+                  <span className="text-[11px] font-black tracking-widest text-green-400">ALL DONE!</span>
+                </div>
+              ) : allCollected ? (
+                <motion.button whileTap={{ scale: 0.95 }} onClick={handleComplete}
+                  disabled={collecting === -2} className="h-full w-full">
+                  <img src={`${M}/dm_btn_collect.png`} alt="Collect"
+                    className="h-full w-full object-contain"
+                    style={{ opacity: collecting === -2 ? 0.6 : 1 }} />
+                </motion.button>
+              ) : (
+                <span className="text-center text-[9px]" style={{ color: 'rgba(160,190,255,0.65)' }}>
+                  Complete all missions to earn free Volt!
+                </span>
+              )}
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── TIMER ────────────────────────────────────────────────────── */}
+        {/* dm_timer_box.png: 555×84, placed in center */}
+        <div className="relative mx-auto mt-2 flex items-center justify-center"
+          style={{ width: '54%', height: 42 }}>
+          <img src={`${M}/dm_timer_box.png`} alt=""
+            className="absolute inset-0 h-full w-full object-fill" />
+          {allDone ? (
+            <img src={`${M}/dm_txt_all_done.png`} alt="All Done"
+              className="relative z-10 h-[55%] object-contain" />
           ) : (
-            /* ── 카운트다운 타이머 ── */
-            <div className="flex items-center justify-center gap-1.5 rounded-full bg-black/30 py-1.5 px-4 mx-auto w-fit ring-1 ring-white/10">
-              <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 text-[#00c8ff]" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" />
-              </svg>
-              <span className="font-mono text-xs font-bold tracking-wider text-white">
-                {String(hours + days * 24).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+            <div className="relative z-10 flex items-center gap-1.5">
+              <img src={`${M}/dm_icon_clock.png`} alt=""
+                className="h-4 w-4 object-contain" />
+              <span className="font-mono text-sm font-black tracking-wider"
+                style={{ color: '#ffe040', textShadow: '0 0 8px rgba(255,200,0,0.8)' }}>
+                {String(totalHours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
               </span>
             </div>
           )}
         </div>
 
-        {/* Coins decoration */}
-        <div className="relative mt-2 flex justify-center overflow-hidden">
-          <img src="/assets/images/mission/coins_deco.png" alt="" className="h-8 w-full object-contain opacity-60" />
+        {/* ── MISSION CARDS ─────────────────────────────────────────────── */}
+        <div className="mt-2 flex flex-col gap-2 px-3">
+          <AnimatePresence>
+            {missions.map((mission, idx) => (
+              <MissionCard
+                key={mission.missionIndex}
+                mission={mission}
+                index={idx}
+                collecting={collecting}
+                onCollect={handleCollect}
+                onNavigate={navigate}
+              />
+            ))}
+          </AnimatePresence>
         </div>
-      </div>
-
-      {/* ── 3. Mission card list ── */}
-      <div className="mt-4 flex-1 space-y-3 px-4 pb-4">
-        <AnimatePresence>
-          {missions.map((mission, idx) => (
-            <MissionCard
-              key={mission.missionIndex}
-              mission={mission}
-              index={idx}
-              collecting={collecting}
-              onCollect={handleCollect}
-              onNavigate={navigate}
-            />
-          ))}
-        </AnimatePresence>
-
 
       </div>
     </div>
   );
 }
 
-// ── Icon frame border color by mission type ──────────────────────────────────
-const ICON_BORDER_COLORS: Record<number, string> = {
-  1: 'ring-blue-400/60 shadow-blue-500/30',
-  2: 'ring-green-400/60 shadow-green-500/30',
-  3: 'ring-purple-400/60 shadow-purple-500/30',
-  4: 'ring-yellow-400/60 shadow-yellow-500/30',
-  5: 'ring-red-400/60 shadow-red-500/30',
-  6: 'ring-cyan-400/60 shadow-cyan-500/30',
-  7: 'ring-orange-400/60 shadow-orange-500/30',
-  8: 'ring-pink-400/60 shadow-pink-500/30',
-};
-
 // ── MissionCard ───────────────────────────────────────────────────────────────
 function MissionCard({
-  mission,
-  index,
-  collecting,
-  onCollect,
-  onNavigate,
+  mission, index, collecting, onCollect, onNavigate,
 }: {
   mission: DailyMissionInfo;
   index: number;
@@ -285,118 +301,145 @@ function MissionCard({
   onCollect: (idx: number) => void;
   onNavigate: (path: string) => void;
 }) {
-  const progress = mission.maxValue > 0
-    ? Math.min((mission.minValue / mission.maxValue) * 100, 100)
-    : 0;
-
-  const iconSrc = MISSION_ICONS[mission.missionType] || MISSION_ICONS[1];
-  const typeName = MISSION_TYPES[mission.missionType] || 'Mission';
-  const borderColor = ICON_BORDER_COLORS[mission.missionType] || ICON_BORDER_COLORS[1];
+  const progress  = mission.maxValue > 0 ? Math.min((mission.minValue / mission.maxValue) * 100, 100) : 0;
+  const collected = mission.status === MISSION_STATUS.COLLECTED;
+  const goodsIcon = GOODS_ICON[mission.missionType] ?? `${M}/dm_btn_goods_03.png`;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
-      className="flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-[#0c1e5a] to-[#0a1444] px-3 py-3.5 ring-1 ring-[#1a4aaa]/50 shadow-md shadow-blue-950/40"
+      className="relative"
     >
-      {/* Icon frame */}
-      <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#060d2e] ring-2 shadow-lg ${borderColor}`}>
-        <img src={iconSrc} alt={typeName} className="h-10 w-10" />
-      </div>
+      {/* dm_bar_mission.png: 1047×212, aspect ratio ≈ 4.94 */}
+      <img src={`${M}/dm_bar_mission.png`} alt=""
+        className="w-full" style={{ display: 'block' }} />
 
-      {/* Info — name + content */}
-      <div className="flex-1 min-w-0">
-        <p className="truncate text-sm font-bold text-white">{mission.name}</p>
-        <p className="truncate text-[11px] text-blue-300/60">{mission.content}</p>
-      </div>
+      {/* Content overlay */}
+      <div className="absolute inset-0 flex items-center gap-2 px-[3%]">
 
-      {/* Right column — progress badge + status button */}
-      <div className="flex shrink-0 flex-col items-end gap-1.5">
-        {/* Progress pill */}
-        <div className="flex items-center gap-1.5 rounded-full bg-[#060d2e] px-2 py-1 ring-1 ring-white/10">
-          <div className="h-1 w-10 overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#00c8ff] to-[#00ff88] transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
+        {/* Mission icon: dm_bg_mission.png (180×180) at left ~6% */}
+        {/* In Figma: left=61/1047=5.8%, size=180/212=84.9% of card height */}
+        <div className="relative shrink-0 flex items-center justify-center"
+          style={{ width: '16.5%', aspectRatio: '1' }}>
+          <img src={`${M}/dm_bg_mission.png`} alt=""
+            className="absolute inset-0 h-full w-full object-contain" />
+          <img src={goodsIcon} alt=""
+            className="relative z-10 object-contain"
+            style={{ width: '88%' }} />
+        </div>
+
+        {/* Mission text + gauge */}
+        <div className="flex flex-1 flex-col justify-center min-w-0 gap-[2px]">
+          <p className="truncate font-black text-white"
+            style={{ fontSize: 'clamp(11px, 3.5vw, 15px)', textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>
+            {mission.name}
+          </p>
+          <p className="truncate" style={{ fontSize: 'clamp(9px, 2.6vw, 12px)', color: 'rgba(160,190,255,0.75)' }}>
+            {mission.content}
+          </p>
+          {/* Progress gauge */}
+          <div className="relative mt-1 overflow-hidden rounded-full" style={{ height: 7 }}>
+            <img src={`${M}/dm_gauge_mask.png`} alt=""
+              className="absolute inset-0 h-full w-full object-fill" />
+            {progress > 0 && (
+              <div className="absolute inset-y-0 left-0 overflow-hidden transition-all duration-500"
+                style={{ width: `${progress}%` }}>
+                <img src={`${M}/dm_gauge_green.png`} alt=""
+                  className="h-full w-full object-fill" />
+              </div>
+            )}
           </div>
-          <span className="text-[10px] font-bold text-white">
+          <span style={{
+            fontSize: 'clamp(8px, 2.2vw, 10px)',
+            color: collected ? '#44ee88' : 'rgba(180,210,255,0.8)',
+            fontFamily: 'monospace',
+            fontWeight: 700,
+          }}>
             {mission.minValue}/{mission.maxValue}
           </span>
         </div>
 
-        {/* Status button */}
-        <StatusButton
-          mission={mission}
-          collecting={collecting}
-          onCollect={onCollect}
-          onNavigate={onNavigate}
-        />
+        {/* Action button area: right ~27% of card, from Figma: w=285/1047=27.2% */}
+        <div className="shrink-0" style={{ width: '27%' }}>
+          <ActionButton
+            mission={mission}
+            collecting={collecting}
+            onCollect={onCollect}
+            onNavigate={onNavigate}
+          />
+        </div>
+
       </div>
     </motion.div>
   );
 }
 
-// ── StatusButton ──────────────────────────────────────────────────────────────
-function StatusButton({
-  mission,
-  collecting,
-  onCollect,
-  onNavigate,
+// ── ActionButton ──────────────────────────────────────────────────────────────
+function ActionButton({
+  mission, collecting, onCollect, onNavigate,
 }: {
   mission: DailyMissionInfo;
   collecting: number | null;
   onCollect: (idx: number) => void;
   onNavigate: (path: string) => void;
 }) {
-  const btnBase = 'rounded-md px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider shadow';
-
-  // COLLECTED → ✓ COMPLETE!
+  // COLLECTED → Complete box (dm_box_complete + dm_complete_text + dm_check_icon)
   if (mission.status === MISSION_STATUS.COLLECTED) {
     return (
-      <div className="flex items-center gap-1 px-2 py-1">
-        <svg viewBox="0 0 16 16" className="h-4 w-4 text-green-400 drop-shadow-[0_0_4px_rgba(74,222,128,0.6)]" fill="currentColor">
-          <path d="M13.485 3.515a.75.75 0 010 1.06l-7 7a.75.75 0 01-1.06 0l-3.5-3.5a.75.75 0 011.06-1.06L6 9.94l6.47-6.47a.75.75 0 011.06 0z" />
-        </svg>
-        <span className="text-[10px] font-extrabold uppercase tracking-wider text-green-400">
-          Complete!
-        </span>
+      <div className="relative flex flex-col items-center justify-center"
+        style={{ aspectRatio: '202/140' }}>
+        <img src={`${M}/dm_box_complete.png`} alt=""
+          className="absolute inset-0 h-full w-full object-contain" />
+        <img src={`${M}/dm_check_icon.png`} alt=""
+          className="relative z-10 object-contain" style={{ width: '40%' }} />
+        <img src={`${M}/dm_complete_text.png`} alt="COMPLETE"
+          className="relative z-10 object-contain" style={{ width: '80%', marginTop: '4%' }} />
       </div>
     );
   }
 
-  // ACHIEVED → COLLECT!
+  // ACHIEVED → Collect button (dm_btn_collect_2)
   if (mission.status === MISSION_STATUS.ACHIEVED) {
     return (
       <motion.button
         whileTap={{ scale: 0.93 }}
         onClick={() => onCollect(mission.missionIndex)}
         disabled={collecting !== null}
-        className={`${btnBase} bg-gradient-to-b from-green-400 to-green-600 text-white shadow-green-900/50 disabled:opacity-50`}
+        className="relative flex items-center justify-center w-full"
+        style={{ aspectRatio: '285/160' }}
       >
-        {collecting === mission.missionIndex ? '…' : 'Collect!'}
+        <img src={`${M}/dm_btn_collect_2.png`} alt="Collect"
+          className="absolute inset-0 h-full w-full object-contain"
+          style={{ opacity: collecting !== null ? 0.55 : 1 }} />
+        {collecting === mission.missionIndex && (
+          <span className="relative z-10 text-[11px] font-extrabold text-white">…</span>
+        )}
       </motion.button>
     );
   }
 
-  // IN_PROGRESS + Bingo → LET'S GO!
+  // Bingo mission → Let's Go
   if (mission.missionType === 2) {
     return (
       <motion.button
         whileTap={{ scale: 0.93 }}
         onClick={() => onNavigate('/bingo')}
-        className={`${btnBase} bg-gradient-to-b from-[#00c8ff] to-[#0088dd] text-white shadow-blue-900/50`}
+        className="w-full"
+        style={{ aspectRatio: '285/160' }}
       >
-        Let's Go!
+        <img src={`${M}/dm_btn_lets_go.png`} alt="Let's Go"
+          className="h-full w-full object-contain" />
       </motion.button>
     );
   }
 
-  // Slot & others → GOOD LUCK!
+  // Default → Good Luck (non-interactive)
   return (
-    <div className={`${btnBase} bg-gradient-to-b from-yellow-400 to-amber-500 text-[#1a0a00] shadow-yellow-900/40`}>
-      Good Luck!
+    <div className="w-full" style={{ aspectRatio: '285/160' }}>
+      <img src={`${M}/dm_btn_good_luck.png`} alt="Good Luck"
+        className="h-full w-full object-contain" />
     </div>
   );
 }

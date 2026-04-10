@@ -9,6 +9,7 @@ import { AccountPage } from './pages/AccountPage';
 import { SettingPage } from './pages/SettingPage';
 import { BingoPage } from './pages/BingoPage';
 import { DailyMissionPage } from './pages/DailyMissionPage';
+import { FigmaMissionPage } from './pages/FigmaMissionPage';
 import { TournamentPage } from './pages/TournamentPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { VicconPage } from './pages/VicconPage';
@@ -24,13 +25,14 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/slot" element={<SlotPage />} />
         <Route path="/crash" element={<CrashGamePageV2 />} />
+        <Route path="/mission" element={<DailyMissionPage />} />
+        <Route path="/figma-mission" element={<FigmaMissionPage />} />
         <Route path="/spine-tool" element={<SpineToolPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/setting" element={<SettingPage />} />
         <Route element={<MainLayout />}>
           <Route path="/lobby" element={<LobbyPage />} />
           <Route path="/bingo" element={<BingoPage />} />
-          <Route path="/mission" element={<DailyMissionPage />} />
           <Route path="/tournament" element={<TournamentPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/viccon" element={<VicconPage />} />
