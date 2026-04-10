@@ -7,8 +7,6 @@ bounds:1486,87,122,126
 bg_frame
 bounds:2,2,1005,437
 offsets:2,2,1009,441
-bg_ring
-bounds:1324,3,1,1
 bg_ring_01
 bounds:1009,189,260,194
 offsets:23,1,284,208
