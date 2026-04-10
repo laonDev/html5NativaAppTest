@@ -6,8 +6,10 @@ import fs from 'fs';
 import type { Connect } from 'vite';
 
 // ── Spine manifest — shared scanner ───────────────────────────────────────────
+/**
+ * [Spine 로직] public/assets/spine 폴더를 스캔하여 manifest.json을 자동 생성합니다.
+ */
 function scanSpineAssets(spineDir: string) {
-    // ... (기존 Spine 로직 동일 유지) ...
     const items: { name: string; json: string; atlas: string }[] = [];
     try {
         const entries = fs.readdirSync(spineDir, { withFileTypes: true });
@@ -60,12 +62,10 @@ function spineManifestPlugin() {
     };
 }
 
-// GitHub Actions 세팅
 const isGitHubPages = !!process.env.GITHUB_ACTIONS;
 
-// defineConfig를 함수 형태로 변경하여 env 환경 변수를 로드할 수 있도록 구성
 export default defineConfig(({ mode }) => {
-    // 현재 디렉토리 기준 .env 파일 로드
+    // 환경별 .env 로드
     const env = loadEnv(mode, process.cwd(), '');
 
     return {
@@ -78,15 +78,20 @@ export default defineConfig(({ mode }) => {
         },
         server: {
             port: 3000,
-            // [Phase 2] CORS 트러블슈팅: 로컬 개발 환경에서 실서버 API 호출 시 Origin 헤더 우회 프록시
+            /**
+             * [Phase 2] CORS 보안 정책 대응 및 API 경로 최적화
+             * - 브라우저의 동일 출처 정책(CORS)을 우회하기 위한 리버스 프록시 설정입니다.
+             * - [4/10 정교화] 정규표현식을 활용하여 하위 경로 치환 시의 매핑 오류를 방지합니다.
+             */
             proxy: {
-                '/api': {
+                '^/api/.*': {
                     target: env.VITE_API_BASE_URL || 'http://10.11.2.37:24080',
-                    changeOrigin: true, // Target URL의 Origin으로 헤더 변조 (CORS 우회 핵심)
+                    changeOrigin: true, // CORS 우회를 위해 Origin 헤더를 Target 주소에 맞게 변조
                     secure: false,
+                    // /api/v1 -> /v1 형태로 정확히 경로 치환
                     rewrite: (path) => path.replace(/^\/api/, ''),
                 },
-                '/supr': {
+                '^/supr/.*': {
                     target: env.VITE_SUPR_API_BASE_URL || 'https://api-staging.nyspins.com',
                     changeOrigin: true,
                     secure: false,
